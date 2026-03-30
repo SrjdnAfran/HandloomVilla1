@@ -17,7 +17,7 @@ export default function CartPage() {
         </p>
         <Link
           href="/shop"
-          className="inline-flex items-center gap-2 bg-[var(--accent)] text-white px-8 py-4 rounded-lg font-medium hover:bg-orange-700 transition-colors"
+          className="inline-flex items-center gap-2 bg-[var(--accent)] text-white px-8 py-4 rounded-lg font-medium hover:bg-[var(--accent-hover)] transition-colors"
         >
           <ArrowLeft className="h-5 w-5" />
           Continue Shopping
@@ -51,7 +51,7 @@ export default function CartPage() {
               <div className="flex-1">
                 <h3 className="text-lg font-semibold">{item.name}</h3>
                 <p className="text-[var(--accent)] font-bold mt-1">
-                  SGD {item.price}
+                  LKR {item.price}
                 </p>
                 <div className="flex items-center gap-4 mt-4">
                   <div className="flex items-center border rounded">
@@ -90,16 +90,16 @@ export default function CartPage() {
             <div className="space-y-4 mb-8">
               <div className="flex justify-between text-lg">
                 <span>Subtotal</span>
-                <span>SGD {total().toFixed(2)}</span>
+                <span>LKR {total().toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-lg font-bold border-t pt-4">
                 <span>Total</span>
                 <span className="text-[var(--accent)]">
-                  SGD {total().toFixed(2)}
+                  LKR {total().toFixed(2)}
                 </span>
               </div>
             </div>
-            <button className="w-full bg-[var(--accent)] text-white py-4 rounded-lg font-medium text-lg hover:bg-orange-700 transition-colors">
+            <button className="w-full bg-[var(--accent)] text-white py-4 rounded-lg font-medium text-lg hover:bg-[var(--accent-hover)] transition-colors">
               Proceed to Checkout
             </button>
             <p className="text-center text-sm text-gray-500 mt-4">

@@ -1,9 +1,12 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { products } from "@/data/products";
+import { useProductStore } from "@/lib/productStore";
 import ProductCard from "@/components/ProductCard"; 
 
 export default function Home() {
+  const products = useProductStore((state) => state.products);
   const featuredProducts = products.slice(0, 4); // show first 4 products
 
   return (
@@ -29,7 +32,7 @@ export default function Home() {
           </p>
           <Link
             href="/shop"
-            className="inline-block bg-[#c2410c] hover:bg-orange-700 text-white px-12 py-4 rounded-full text-lg font-medium transition-all active:scale-95"
+            className="inline-block bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white px-12 py-4 rounded-full text-lg font-medium transition-all active:scale-95"
           >
             Shop Our Collection →
           </Link>
@@ -57,7 +60,7 @@ export default function Home() {
           <div className="text-center mt-12">
             <Link
               href="/shop"
-              className="inline-block border-2 border-[#c2410c] text-[#c2410c] hover:bg-[#c2410c] hover:text-white px-10 py-3 rounded-full font-medium transition-all"
+              className="inline-block border-2 border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white px-10 py-3 rounded-full font-medium transition-all"
             >
               View All Products →
             </Link>

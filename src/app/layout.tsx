@@ -21,7 +21,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={cn("font-sans", geist.variable)}>
-     <body className={`${inter.className} bg-[var(--background)] text-[var(--foreground)] antialiased`}>
+     <body 
+     
+     className={`${inter.className} bg-[var(--background)] text-[var(--foreground)] antialiased`}>
         <Header />
         <main className="min-h-[calc(100vh-4rem)]">
           {children}

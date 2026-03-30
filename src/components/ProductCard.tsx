@@ -24,12 +24,12 @@ export default function ProductCard({ product }: ProductCardProps) {
           {product.fabric} • {product.category}
         </p>
         <div className="flex justify-between items-center">
-          <span className="text-xl font-bold text-[#c2410c]">
+          <span className="text-xl font-bold text-[var(--accent)]">
             SGD {product.price}
           </span>
           <Link
             href={`/product/${product.id}`}
-            className="text-sm font-medium text-[#c2410c] hover:underline"
+            className="text-sm font-medium text-[var(--accent)] hover:underline"
           >
             View →
           </Link>

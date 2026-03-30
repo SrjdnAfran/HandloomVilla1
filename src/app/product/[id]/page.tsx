@@ -54,7 +54,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
           <div className="flex items-center gap-4 mb-6">
             <span className="text-3xl font-bold text-[var(--accent)]">
-              SGD {product.price}
+              LKR {product.price}
             </span>
             {product.fabric && (
               <span className="text-lg text-[var(--text-muted)]">
@@ -87,7 +87,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <AddToCartButton product={product} />
 
           <p className="mt-4 text-sm text-gray-500 text-center md:text-left">
-            * Free shipping on orders above SGD 300 in Singapore
+            * Free shipping on orders above LKR 300 in Singapore
           </p>
         </div>
       </div>

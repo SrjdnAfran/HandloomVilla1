@@ -1,7 +1,7 @@
 export type Product = {
   id: number;
   name: string;
-  price: number;          // in SGD
+  price: number;          // in LKR
   image: string;          // placeholder URLs for now
   category: string;
   fabric?: string;

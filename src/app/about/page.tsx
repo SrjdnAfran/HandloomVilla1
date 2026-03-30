@@ -1,7 +1,7 @@
 export default function AboutPage() {
   return (
     <div className="container mx-auto px-6 py-16 max-w-4xl">
-      <h1 className="text-5xl font-serif font-bold text-center mb-12 text-[#c2410c]">
+      <h1 className="text-5xl font-serif font-bold text-center mb-12 text-[var(--accent)]">
         Our Story
       </h1>
 
@@ -22,7 +22,7 @@ export default function AboutPage() {
       </div>
 
       <div className="mt-16 text-center">
-        <p className="text-2xl font-serif text-[#c2410c]">
+        <p className="text-2xl font-serif text-[var(--accent)]">
           "Wear the tradition. Feel the love."
         </p>
       </div>
