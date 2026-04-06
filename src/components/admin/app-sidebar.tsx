@@ -1,8 +1,8 @@
 // src/components/admin/app-sidebar.tsx
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   Sidebar,
   SidebarContent,
@@ -14,14 +14,14 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar";
-import { Home, Package, ShoppingCart, Users, Settings, LogOut } from "lucide-react";
+} from '@/components/ui/sidebar';
+import { Home, Package, ShoppingCart, Users, Settings, LogOut } from 'lucide-react';
 
 const items = [
-  { title: "Dashboard", url: "/admin", icon: Home },
-  { title: "Products", url: "/admin/products", icon: Package },
-  { title: "Orders", url: "/admin/orders", icon: ShoppingCart },
-  { title: "Customers", url: "/admin/customers", icon: Users },
+  { title: 'Dashboard', url: '/admin', icon: Home },
+  { title: 'Products', url: '/admin/products', icon: Package },
+  { title: 'Orders', url: '/admin/orders', icon: ShoppingCart },
+  { title: 'Customers', url: '/admin/customers', icon: Users },
 ];
 
 export function AppSidebar() {
@@ -31,7 +31,7 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader className="border-b p-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-[#d97757] rounded-2xl flex items-center justify-center text-white font-bold text-2xl">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#d97757] text-2xl font-bold text-white">
             H
           </div>
           <div>
@@ -46,7 +46,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Main Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => {
+              {items.map(item => {
                 const Icon = item.icon;
                 const isActive = pathname === item.url;
                 return (

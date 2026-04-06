@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, Tags, ShoppingBag, LogOut } from "lucide-react";
+import { LayoutDashboard, Package, Tags, ShoppingBag, LogOut, Menu, X } from "lucide-react";
 
 export default function AdminLayout({
   children,
@@ -11,8 +11,10 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
+  // Check if user is logged in
   useEffect(() => {
     const password = localStorage.getItem("adminPassword");
     if (password === "handloom123") {
@@ -43,34 +45,29 @@ export default function AdminLayout({
     { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
   ];
 
+  // Login Screen
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fdfaf5]">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="bg-white p-10 rounded-2xl shadow-xl max-w-md w-full">
-          <h1 className="text-3xl font-serif text-center mb-8 text-[var(--accent)]">
+          <h1 className="text-3xl font-serif text-center mb-8 text-[#274a9c]">
             HandloomVilla Admin
           </h1>
-          <form onSubmit={login} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium mb-2">Admin Password</label>
-              <input
-                type="password"
-                name="password"
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[var(--accent)]"
-                placeholder="Enter password"
-                required
-              />
-            </div>
+          <form onSubmit={login}>
+            <input
+              type="password"
+              name="password"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#274a9c]"
+              placeholder="Enter admin password"
+              required
+            />
             <button
               type="submit"
-              className="w-full bg-[var(--accent)] text-white py-4 rounded-lg font-medium hover:bg-[var(--accent-hover)]"
+              className="w-full mt-6 bg-[#274a9c] text-white py-4 rounded-lg font-medium hover:bg-[#1e3a7a]"
             >
-              Login to Admin Panel
+              Login
             </button>
           </form>
-          <p className="text-center text-xs text-gray-500 mt-6">
-            Default password: <span className="font-mono">handloom123</span>
-          </p>
         </div>
       </div>
     );
@@ -78,53 +75,81 @@ export default function AdminLayout({
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Dark Blue Sidebar */}
-      <div className="w-72 bg-[#0f2a5e] text-white border-r border-gray-800 flex flex-col">
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block w-72 bg-[#0f2a5e] text-white flex-shrink-0 border-r border-gray-800">
         <div className="p-8 border-b border-gray-700">
-          <h1 className="text-3xl font-serif font-bold text-white">
-            HandloomVilla
-          </h1>
-          <p className="text-sm text-gray-400 mt-1">Admin Panel</p>
+          <h1 className="text-3xl font-serif font-bold">HandloomVilla</h1>
+          <p className="text-gray-400 text-sm mt-1">Admin Panel</p>
         </div>
 
-        <nav className="flex-1 p-6">
-          <ul className="space-y-2">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={`flex items-center gap-3 px-5 py-3 rounded-xl transition-all ${
-                      isActive
-                        ? "bg-[#274a9c] text-white"
-                        : "hover:bg-[#1e3a7a] text-gray-300"
-                    }`}
-                  >
-                    <Icon size={22} />
-                    <span className="font-medium">{item.label}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+        <nav className="p-6">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const active = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-3 px-5 py-3.5 rounded-xl mb-1 transition-all ${
+                  active ? "bg-[#274a9c]" : "hover:bg-[#1e3a7a]"
+                }`}
+              >
+                <Icon size={22} />
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
 
-        <div className="p-6 border-t border-gray-700">
+        <div className="absolute bottom-8 px-6 w-72">
           <button
             onClick={logout}
-            className="flex items-center gap-3 w-full px-5 py-3 hover:bg-[#1e3a7a] text-gray-300 rounded-xl transition-all"
+            className="flex items-center gap-3 text-red-400 hover:text-red-500 w-full px-5 py-3 rounded-xl hover:bg-red-950/30"
           >
             <LogOut size={22} />
-            <span className="font-medium">Logout</span>
+            Logout
           </button>
         </div>
       </div>
 
-      {/* Main Content Area */}
+      {/* Main Area */}
       <div className="flex-1">
-        <main className="p-8">{children}</main>
+        {/* Mobile Top Bar */}
+        <div className="md:hidden bg-white border-b px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+          <h1 className="text-2xl font-serif font-bold text-[#274a9c]">HandloomVilla</h1>
+          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
+        </div>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden fixed inset-0 bg-black/70 z-50">
+            <div className="bg-white h-full w-72 p-6">
+              <nav className="space-y-2">
+                {menuItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-3 p-4 rounded-xl hover:bg-gray-100"
+                  >
+                    <item.icon size={24} />
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+              <button onClick={logout} className="mt-10 text-red-600 flex items-center gap-3 p-4">
+                <LogOut size={24} /> Logout
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Content Area - NO Header & Footer */}
+        <main className="p-4 md:p-8 min-h-screen">
+          {children}
+        </main>
       </div>
     </div>
   );
