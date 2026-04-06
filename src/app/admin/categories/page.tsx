@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Trash2, X, Edit2 } from "lucide-react";
+import { Plus, Trash2, X, Edit2, Save, FolderPlus } from "lucide-react";
 
 interface Category {
   id: number;
@@ -12,74 +12,53 @@ interface Category {
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newSubCategory, setNewSubCategory] = useState("");
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingName, setEditingName] = useState("");
 
-  // Load categories
+  // Load Categories
   useEffect(() => {
     const saved = localStorage.getItem("handloomCategories");
     
     if (saved) {
       setCategories(JSON.parse(saved));
     } else {
-      // Default categories for Handloom Villa Sri Lanka
-      const defaults: Category[] = [
-        { 
-          id: 1, 
-          name: "Saree", 
-          subCategories: ["Cotton Saree", "Silk Saree", "Banarasi", "Kanchipuram", "Linen Saree"] 
-        },
-        { 
-          id: 2, 
-          name: "Sarong & Lungi", 
-          subCategories: ["Cotton Sarong", "Silk Sarong", "Lungi", "Checked Sarong"] 
-        },
-        { 
-          id: 3, 
-          name: "Kurti", 
-          subCategories: ["Anarkali Kurti", "Straight Kurti", "Long Kurti"] 
-        },
-        { 
-          id: 4, 
-          name: "Dupatta & Shawl", 
-          subCategories: ["Chiffon Dupatta", "Cotton Dupatta", "Silk Shawl"] 
-        },
+      const defaultCategories: Category[] = [
+        { id: 1, name: "Saree", subCategories: ["Cotton Saree", "Silk Saree", "Banarasi", "Kanchipuram"] },
+        { id: 2, name: "Sarong & Lungi", subCategories: ["Cotton Sarong", "Silk Sarong", "Lungi"] },
+        { id: 3, name: "Kurti", subCategories: ["Anarkali Kurti", "Straight Kurti"] },
+        { id: 4, name: "Dupatta", subCategories: ["Chiffon Dupatta", "Cotton Dupatta"] },
       ];
-      
-      setCategories(defaults);
-      localStorage.setItem("handloomCategories", JSON.stringify(defaults));
+      setCategories(defaultCategories);
+      localStorage.setItem("handloomCategories", JSON.stringify(defaultCategories));
     }
   }, []);
 
-  // Save to localStorage whenever categories change
+  // Auto save
   useEffect(() => {
     if (categories.length > 0) {
       localStorage.setItem("handloomCategories", JSON.stringify(categories));
     }
   }, [categories]);
 
-  const addNewCategory = () => {
+  const addCategory = () => {
     if (!newCategoryName.trim()) return;
-    
-    const newCat: Category = {
+    const newCat = {
       id: Date.now(),
       name: newCategoryName.trim(),
       subCategories: [],
     };
-    
     setCategories([...categories, newCat]);
     setNewCategoryName("");
     setShowForm(false);
   };
 
-  const addSubCategory = () => {
-    if (!newSubCategory.trim() || !selectedCategoryId) return;
-
-    setCategories(categories.map(cat => 
-      cat.id === selectedCategoryId 
+  const addSubCategory = (catId: number) => {
+    if (!newSubCategory.trim()) return;
+    
+    setCategories(categories.map(cat =>
+      cat.id === catId 
         ? { ...cat, subCategories: [...cat.subCategories, newSubCategory.trim()] }
         : cat
     ));
@@ -87,166 +66,211 @@ export default function AdminCategoriesPage() {
   };
 
   const deleteCategory = (id: number) => {
-    if (confirm("Delete this category and all its sub-categories?")) {
+    if (confirm("Delete this category? All subcategories will be removed.")) {
       setCategories(categories.filter(c => c.id !== id));
     }
   };
 
-  const deleteSubCategory = (categoryId: number, subName: string) => {
-    setCategories(categories.map(cat => 
-      cat.id === categoryId 
+  const deleteSubCategory = (catId: number, subName: string) => {
+    setCategories(categories.map(cat =>
+      cat.id === catId 
         ? { ...cat, subCategories: cat.subCategories.filter(s => s !== subName) }
         : cat
     ));
   };
 
-  const startEditing = (category: Category) => {
-    setEditingCategory(category);
-    setNewCategoryName(category.name);
-    setShowForm(true);
+  const startEditing = (cat: Category) => {
+    setEditingId(cat.id);
+    setEditingName(cat.name);
   };
 
-  const updateCategory = () => {
-    if (!newCategoryName.trim() || !editingCategory) return;
-
-    setCategories(categories.map(cat => 
-      cat.id === editingCategory.id 
-        ? { ...cat, name: newCategoryName.trim() }
+  const saveEditing = () => {
+    if (!editingName.trim()) return;
+    setCategories(categories.map(cat =>
+      cat.id === editingId 
+        ? { ...cat, name: editingName.trim() }
         : cat
     ));
+    setEditingId(null);
+    setEditingName("");
+  };
 
-    setNewCategoryName("");
-    setEditingCategory(null);
-    setShowForm(false);
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditingName("");
   };
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="flex justify-between items-center mb-10">
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 pb-4 border-b border-gray-200">
         <div>
-          <h1 className="text-4xl font-serif font-bold text-gray-900">Categories</h1>
-          <p className="text-gray-600 mt-2">Manage product categories and sub-categories for Handloom Villa</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
+            Category Management
+          </h1>
+          <p className="text-gray-500 mt-1">
+            Organize your product catalog with categories and subcategories
+          </p>
         </div>
         <button
-          onClick={() => {
-            setEditingCategory(null);
-            setNewCategoryName("");
-            setShowForm(true);
-          }}
-          className="flex items-center gap-3 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white px-8 py-3 rounded-xl font-medium transition-all"
+          onClick={() => setShowForm(true)}
+          className="inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm"
         >
-          <Plus size={22} />
-          Add New Category
+          <Plus size={18} />
+          <span>New Category</span>
         </button>
       </div>
 
-      {/* Add/Edit Form */}
+      {/* Add Category Modal / Form */}
       {showForm && (
-        <div className="bg-white p-8 rounded-3xl shadow mb-10">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">
-              {editingCategory ? "Edit Category" : "Add New Category"}
-            </h2>
-            <button 
-              onClick={() => setShowForm(false)} 
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <X size={28} />
-            </button>
-          </div>
-
-          <div className="flex gap-4">
-            <input
-              type="text"
-              value={newCategoryName}
-              onChange={(e) => setNewCategoryName(e.target.value)}
-              placeholder="Category Name (e.g. Saree, Sarong)"
-              className="flex-1 border border-gray-300 rounded-xl px-5 py-4 focus:outline-none focus:border-[var(--accent)]"
-            />
-            <button
-              onClick={editingCategory ? updateCategory : addNewCategory}
-              className="bg-[var(--accent)] text-white px-10 py-4 rounded-xl font-medium hover:bg-[var(--accent-hover)] min-w-[120px]"
-            >
-              {editingCategory ? "Update" : "Add"}
-            </button>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowForm(false)}>
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-gray-900">Create New Category</h2>
+              <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
+              <input
+                type="text"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                placeholder="e.g., Saree, Kurti, Dhoti"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                autoFocus
+              />
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => setShowForm(false)} className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg">
+                Cancel
+              </button>
+              <button onClick={addCategory} className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                Create Category
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Categories List */}
-      <div className="space-y-8">
-        {categories.length === 0 ? (
-          <div className="bg-white p-12 rounded-3xl text-center text-gray-500">
-            No categories yet. Click "Add New Category" to start.
+      {/* Categories Grid */}
+      {categories.length === 0 ? (
+        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+          <div className="text-gray-400 mb-3">
+            <FolderPlus size={48} className="mx-auto" />
           </div>
-        ) : (
-          categories.map((category) => (
-            <div key={category.id} className="bg-white rounded-3xl shadow p-8">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-semibold text-gray-900">{category.name}</h3>
-                <div className="flex gap-4">
+          <h3 className="text-lg font-medium text-gray-900">No categories yet</h3>
+          <p className="text-gray-500 mt-1">Get started by creating your first category</p>
+          <button
+            onClick={() => setShowForm(true)}
+            className="mt-4 inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium"
+          >
+            <Plus size={16} /> Create Category
+          </button>
+        </div>
+      ) : (
+        <div className="grid gap-6">
+          {categories.map((cat) => (
+            <div key={cat.id} className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+              {/* Category Header */}
+              <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  {editingId === cat.id ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        className="border border-gray-300 rounded-lg px-3 py-1.5 text-lg font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        autoFocus
+                      />
+                      <button onClick={saveEditing} className="text-green-600 hover:text-green-700 p-1">
+                        <Save size={18} />
+                      </button>
+                      <button onClick={cancelEditing} className="text-gray-500 hover:text-gray-700 p-1">
+                        <X size={18} />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <h3 className="text-xl font-semibold text-gray-900">{cat.name}</h3>
+                      <span className="text-sm text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                        {cat.subCategories.length}
+                      </span>
+                    </>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  {editingId !== cat.id && (
+                    <button
+                      onClick={() => startEditing(cat)}
+                      className="text-gray-500 hover:text-indigo-600 p-1.5 rounded-lg hover:bg-gray-100"
+                      title="Edit category"
+                    >
+                      <Edit2 size="16" />
+                    </button>
+                  )}
                   <button
-                    onClick={() => startEditing(category)}
-                    className="text-blue-600 hover:text-blue-800"
+                    onClick={() => deleteCategory(cat.id)}
+                    className="text-gray-500 hover:text-red-600 p-1.5 rounded-lg hover:bg-gray-100"
+                    title="Delete category"
                   >
-                    <Edit2 size={22} />
-                  </button>
-                  <button
-                    onClick={() => deleteCategory(category.id)}
-                    className="text-red-600 hover:text-red-800"
-                  >
-                    <Trash2 size={22} />
+                    <Trash2 size="16" />
                   </button>
                 </div>
               </div>
 
-              {/* Sub Categories Section */}
-              <div>
-                <div className="flex items-center gap-3 mb-5">
+              {/* Subcategories Section */}
+              <div className="p-6">
+                {/* Add Subcategory Input */}
+                <div className="flex gap-3 mb-6">
                   <input
                     type="text"
                     value={newSubCategory}
                     onChange={(e) => setNewSubCategory(e.target.value)}
-                    placeholder="Add sub-category (e.g. Cotton Saree)"
-                    className="flex-1 border border-gray-300 rounded-xl px-5 py-3 focus:outline-none"
-                    onKeyDown={(e) => e.key === "Enter" && addSubCategory()}
+                    placeholder="Add a subcategory..."
+                    className="flex-1 border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                    onKeyDown={(e) => e.key === 'Enter' && addSubCategory(cat.id)}
                   />
                   <button
-                    onClick={() => {
-                      setSelectedCategoryId(category.id);
-                      addSubCategory();
-                    }}
-                    className="bg-gray-800 text-white px-8 py-3 rounded-xl font-medium hover:bg-gray-700"
+                    onClick={() => addSubCategory(cat.id)}
+                    className="inline-flex items-center gap-2 bg-gray-800 text-white px-5 py-2.5 rounded-lg hover:bg-gray-900 transition-colors font-medium"
                   >
-                    Add Sub
+                    <Plus size="16" />
+                    <span>Add</span>
                   </button>
                 </div>
 
-                <div className="flex flex-wrap gap-3">
-                  {category.subCategories.length > 0 ? (
-                    category.subCategories.map((sub, index) => (
-                      <div 
-                        key={index} 
-                        className="bg-gray-100 px-5 py-2.5 rounded-full flex items-center gap-2 text-sm"
+                {/* Subcategories List */}
+                {cat.subCategories.length === 0 ? (
+                  <div className="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                    <p className="text-gray-400 text-sm">No subcategories yet. Add one above.</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {cat.subCategories.map((sub, index) => (
+                      <div
+                        key={index}
+                        className="inline-flex items-center gap-1.5 bg-blue-950 hover:bg-blue-900 rounded-full pl-3 pr-1.5 py-1.5 transition-colors group"
                       >
-                        <span>{sub}</span>
+                        <span className="text-sm text-gray-200">{sub}</span>
                         <button
-                          onClick={() => deleteSubCategory(category.id, sub)}
-                          className="text-red-500 hover:text-red-700"
+                          onClick={() => deleteSubCategory(cat.id, sub)}
+                          className="text-gray-400 hover:text-red-500 rounded-full p-0.5 transition-colors"
+                          title="Remove subcategory"
                         >
-                          <X size={16} />
+                          <X size="14" />
                         </button>
                       </div>
-                    ))
-                  ) : (
-                    <p className="text-gray-500 italic">No sub-categories added yet</p>
-                  )}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -31,7 +31,7 @@ export const products: Product[] = [
     id: 3,
     name: "Anarkali Kurti Set - Navy Blue",
     price: 179,
-    image: "https://images.unsplash.com/photo-1585487000160-6ebcfceb0d26?w=800&auto=format&fit=crop&q=80",
+    image: "https://images.unsplash.com/photo-1610030469983-c6b8b5e6f5e4?w=800&auto=format&fit=crop&q=80",
     category: "Kurti",
     fabric: "Chanderi",
     description: "Elegant floor-length Anarkali with dupatta. Perfect for festive occasions.",
