@@ -12,6 +12,8 @@ interface Category {
   subCategories: string[];
 }
 
+const IMGBB_API_KEY = "b9076e37e2d31f1fa37b526a83d1ef97"; // ← Replace with your key
+
 export default function AdminProductsPage() {
   const { products, addProduct, updateProduct, deleteProduct } = useProductStore();
 
@@ -19,7 +21,7 @@ export default function AdminProductsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [imageWarning, setImageWarning] = useState<string>("");
+  const [uploadError, setUploadError] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -27,7 +29,7 @@ export default function AdminProductsPage() {
     image: "",
     category: "",
     subCategory: "",
-    color: "", // Changed from fabric to color
+    color: "",
     description: "",
   });
 
@@ -37,7 +39,7 @@ export default function AdminProductsPage() {
     if (saved) setCategories(JSON.parse(saved));
   }, []);
 
-  // Load Initial Products if empty
+  // Load Products
   useEffect(() => {
     if (products.length === 0) {
       import("@/data/products").then((mod) => {
@@ -50,32 +52,43 @@ export default function AdminProductsPage() {
     setFormData({ name: "", price: 0, image: "", category: "", subCategory: "", color: "", description: "" });
     setEditingProduct(null);
     setShowForm(false);
-    setImageWarning("");
+    setUploadError("");
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Upload Image to ImgBB
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
-    // Check file size (5MB limit)
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
-      setImageWarning(`Image size is ${(file.size / (1024 * 1024)).toFixed(2)}MB. Please upload an image smaller than 5MB.`);
+
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError("Image must be smaller than 10MB");
       return;
     }
-    
-    setImageWarning("");
+
     setUploading(true);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setFormData(prev => ({ ...prev, image: event.target?.result as string }));
+    setUploadError("");
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setFormData(prev => ({ ...prev, image: data.data.url }));
+      } else {
+        setUploadError("Upload failed. Please try again.");
+      }
+    } catch (err) {
+      setUploadError("Failed to upload image. Check your internet connection.");
+    } finally {
       setUploading(false);
-    };
-    reader.onerror = () => {
-      setImageWarning("Error reading file. Please try again.");
-      setUploading(false);
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -97,6 +110,7 @@ export default function AdminProductsPage() {
       const newProduct: Product = { id: Date.now(), ...productData };
       addProduct(newProduct);
     }
+
     resetForm();
   };
 
@@ -112,11 +126,11 @@ export default function AdminProductsPage() {
       image: product.image,
       category: mainCat,
       subCategory: subCat,
-      color: product.color || "", // Changed from fabric to color
+      color: product.color || "",
       description: product.description,
     });
     setShowForm(true);
-    setImageWarning("");
+    setUploadError("");
   };
 
   const handleDelete = (id: number) => {
@@ -152,20 +166,22 @@ export default function AdminProductsPage() {
             </button>
             
             <div className="p-8">
-              <h2 className="text-3xl font-bold mb-8">{editingProduct ? "Edit Product" : "Add New Product"}</h2>
+              <h2 className="text-3xl font-bold mb-8">
+                {editingProduct ? "Edit Product" : "Add New Product"}
+              </h2>
 
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Image Upload */}
+                {/* Image Upload Section */}
                 <div>
                   <label className="block text-sm font-medium mb-3">Product Photo *</label>
                   <div className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center">
                     {formData.image ? (
-                      <div className="relative mx-auto w-48 h-64 rounded-xl overflow-hidden">
+                      <div className="relative mx-auto w-48 h-64 rounded-xl overflow-hidden border">
                         <Image src={formData.image} alt="preview" fill className="object-cover" />
                         <button 
                           type="button" 
                           onClick={() => setFormData(p => ({...p, image: ""}))} 
-                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                          className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
                         >
                           <X size={18} />
                         </button>
@@ -174,27 +190,23 @@ export default function AdminProductsPage() {
                       <label className="cursor-pointer block">
                         <Upload size={50} className="mx-auto text-gray-400 mb-3" />
                         <span className="text-gray-600">Click to upload image</span>
-                        <p className="text-xs text-gray-400 mt-2">Max file size: 5MB</p>
-                        <input 
-                          type="file" 
-                          accept="image/*" 
-                          onChange={handleImageUpload} 
-                          className="hidden" 
-                        />
+                        <p className="text-xs text-gray-500 mt-2">Max 10MB • PNG, JPG, JPEG</p>
+                        <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
                       </label>
                     )}
                     {uploading && (
-                      <p className="text-sm text-blue-600 mt-2">Uploading...</p>
+                      <div className="mt-3 flex items-center justify-center gap-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                        <p className="text-blue-600">Uploading to ImgBB...</p>
+                      </div>
+                    )}
+                    {uploadError && (
+                      <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                        <AlertCircle size={18} className="text-red-600 flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-red-600">{uploadError}</p>
+                      </div>
                     )}
                   </div>
-                  
-                  {/* Image Warning */}
-                  {imageWarning && (
-                    <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-2">
-                      <AlertCircle size={18} className="text-yellow-600 flex-shrink-0 mt-0.5" />
-                      <p className="text-sm text-yellow-700">{imageWarning}</p>
-                    </div>
-                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -276,6 +288,7 @@ export default function AdminProductsPage() {
                   <button 
                     type="submit" 
                     className="flex-1 bg-[var(--accent)] text-white py-4 rounded-2xl font-medium hover:bg-[var(--accent-hover)] transition-colors"
+                    disabled={uploading}
                   >
                     {editingProduct ? "Update Product" : "Add Product"}
                   </button>
@@ -318,7 +331,7 @@ export default function AdminProductsPage() {
                     <div className="relative w-20 h-24 rounded-xl overflow-hidden border">
                       <Image src={product.image} alt={product.name} fill className="object-cover" />
                     </div>
-                  </td>
+                   </td>
                   <td className="p-6 font-medium">{product.name}</td>
                   <td className="p-6">{product.category}</td>
                   <td className="p-6">

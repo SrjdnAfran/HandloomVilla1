@@ -1,14 +1,26 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
   images: {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'i.ibb.co',
+        port: '',
+        pathname: '/**',
+      },
+      // Add other hosts as needed
+      {
+        protocol: 'https',
         hostname: 'images.unsplash.com',
         port: '',
-        pathname: '/**',  // allows any path on unsplash (including query params like ?w=800)
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.cloudinary.com',
+        port: '',
+        pathname: '/**',
       },
     ],
   },
