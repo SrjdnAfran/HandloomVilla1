@@ -5,6 +5,7 @@ export type Product = {
   image: string;          // placeholder URLs for now
   category: string;
   fabric?: string;
+  color?: string;
   description: string;
 };
 
