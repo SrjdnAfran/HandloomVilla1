@@ -3,7 +3,6 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Product, ProductVariant } from '@/types/product';
 
-// Add Cart Item Type
 export interface CartItem {
   id: string;
   productId: number;
@@ -92,7 +91,6 @@ export const useProductStore = create<ProductState>()(
           ),
         })),
 
-      // Cart Actions
       addToCart: (item) =>
         set((state) => {
           const existingItem = state.cart.find((i) => i.id === item.id);

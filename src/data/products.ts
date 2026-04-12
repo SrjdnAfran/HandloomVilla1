@@ -6,15 +6,15 @@ export interface ProductVariant {
   image: string;
   stock: number;
   serialNumber: string;
-  sku: string; // Full SKU with prefix
+  sku?: string;
+  slug?: string;
   isDefault?: boolean;
-  slug?: string; // For SEO-friendly URLs
 }
 
 export interface Product {
   id: number;
   name: string;
-  skuPrefix: string; // User-defined 3-letter prefix
+  skuPrefix: string;
   category: string;
   subCategory?: string;
   description?: string;
