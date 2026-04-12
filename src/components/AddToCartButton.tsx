@@ -1,20 +1,47 @@
-"use client";
+// src/components/AddToCartButton.tsx
+'use client';
 
-import { useCartStore } from "@/lib/cartStore";
-import { ShoppingCart } from "lucide-react";
-import { Product } from "@/data/products";
+import { useCartStore } from '@/lib/cartStore';
+import { ShoppingCart } from 'lucide-react';
 
 interface AddToCartButtonProps {
-  product: Product;
+  variantId: string;
+  productId: number;
+  name: string;
+  price: number;
+  image: string;
+  sku: string;
+  color: string;
 }
 
-export default function AddToCartButton({ product }: AddToCartButtonProps) {
-  const addItem = useCartStore((state) => state.addItem);
+export default function AddToCartButton({
+  variantId,
+  productId,
+  name,
+  price,
+  image,
+  sku,
+  color,
+}: AddToCartButtonProps) {
+  const addItem = useCartStore(state => state.addItem);
+
+  const handleAddToCart = () => {
+    addItem({
+      id: variantId,
+      productId: productId,
+      name: name,
+      price: price,
+      quantity: 1,
+      image: image,
+      sku: sku,
+      color: color,
+    });
+  };
 
   return (
     <button
-      onClick={() => addItem(product)}
-      className="w-full md:w-auto bg-[var(--accent)] text-white px-10 py-4 rounded-lg font-medium text-lg hover:bg-[var(--accent-hover)] transition-colors flex items-center justify-center gap-3 shadow-md active:scale-95"
+      onClick={handleAddToCart}
+      className="flex w-full items-center justify-center gap-3 rounded-lg bg-[var(--accent)] px-10 py-4 text-lg font-medium text-white shadow-md transition-colors hover:bg-[var(--accent-hover)] active:scale-95 md:w-auto"
     >
       <ShoppingCart className="h-6 w-6" />
       Add to Cart
