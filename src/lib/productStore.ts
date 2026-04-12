@@ -1,7 +1,7 @@
 // lib/productStore.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Product, ProductVariant } from '@/data/products';
+import { Product, ProductVariant } from '@/types/product';
 
 export interface CartItem {
   id: string;
@@ -9,7 +9,7 @@ export interface CartItem {
   name: string;
   price: number;
   quantity: number;
-  image: string;
+  image: string;      // ← Make sure this exists
   sku: string;
   color: string;
 }
