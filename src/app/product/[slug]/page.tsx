@@ -7,6 +7,7 @@ import { ArrowLeft, ShoppingCart, Plus, Minus, Check } from 'lucide-react';
 import { useProductStore, CartItem } from '@/lib/productStore';
 import { Product, ProductVariant } from '@/data/products';
 import { notFound } from 'next/navigation';
+import { useCartStore } from '@/lib/cartStore';
 
 export default function VariantPage({ params }: { params: Promise<{ slug: string }> }) {
   const [variant, setVariant] = useState<ProductVariant | null>(null);
@@ -15,7 +16,7 @@ export default function VariantPage({ params }: { params: Promise<{ slug: string
   const [showSuccess, setShowSuccess] = useState(false);
 
   const products = useProductStore(state => state.products);
-  const addToCart = useProductStore(state => state.addToCart);
+  const addToCart = useCartStore(state => state.addItem);
 
   useEffect(() => {
     params.then(async p => {
@@ -49,7 +50,7 @@ export default function VariantPage({ params }: { params: Promise<{ slug: string
   const handleAddToCart = () => {
     if (!variant || !product) return;
 
-    const cartItem: CartItem = {
+    addToCart({
       id: variant.id,
       productId: product.id,
       name: `${product.name} - ${variant.color}`,
@@ -58,9 +59,7 @@ export default function VariantPage({ params }: { params: Promise<{ slug: string
       image: variant.image,
       sku: variant.sku || variant.serialNumber,
       color: variant.color,
-    };
-
-    addToCart(cartItem);
+    });
 
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 3000);

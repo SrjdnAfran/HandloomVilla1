@@ -3,15 +3,12 @@
 
 import Link from 'next/link';
 import { ShoppingCart, Menu, X, Search } from 'lucide-react';
-import { useProductStore } from '@/lib/productStore';
+import { useCartStore } from '@/lib/cartStore';
 import { useState } from 'react';
 
 export default function Header() {
-  const cart = useProductStore(state => state.cart);
+  const itemCount = useCartStore(state => state.itemCount());
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  // Calculate item count from cart (safely)
-  const itemCount = cart?.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
   return (
     <header
@@ -22,14 +19,14 @@ export default function Header() {
       }}
     >
       <div className="mx-auto flex h-20 max-w-screen-2xl items-center justify-between px-6 lg:px-12">
-        {/* Logo - Update text color for better contrast on dark gradient */}
+        {/* Logo */}
         <Link href="/" className="flex items-center">
           <span className="font-serif text-2xl font-bold tracking-tight text-white">
             Handloomvilla
           </span>
         </Link>
 
-        {/* Desktop Navigation - Update text colors */}
+        {/* Desktop Navigation */}
         <nav className="hidden items-center gap-10 md:flex">
           <Link
             href="/"
@@ -57,7 +54,7 @@ export default function Header() {
           </Link>
         </nav>
 
-        {/* Right Section - Update colors for dark background */}
+        {/* Right Section */}
         <div className="flex items-center gap-4">
           {/* Search Bar */}
           <div className="hidden items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-sm lg:flex">
@@ -67,6 +64,7 @@ export default function Header() {
               placeholder="Search products..."
               className="ml-2 w-40 bg-transparent text-sm text-white outline-none placeholder:text-white/50"
               onChange={e => {
+                // You can implement search functionality here
                 console.log('Search:', e.target.value);
               }}
             />
@@ -97,7 +95,7 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile Menu - Update for dark theme */}
+      {/* Mobile Menu */}
       <div
         className={`overflow-hidden transition-all duration-300 md:hidden ${
           isMenuOpen ? 'max-h-96 border-t border-white/20' : 'max-h-0'

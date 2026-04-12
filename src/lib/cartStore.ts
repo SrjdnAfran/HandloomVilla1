@@ -1,16 +1,23 @@
+// src/lib/cartStore.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Product } from '@/data/products';
 
-interface CartItem extends Product {
+export interface CartItem {
+  id: string;           // Variant ID
+  productId: number;    // Parent product ID
+  name: string;         // Product name + variant color
+  price: number;        // Price (from product.basePrice)
   quantity: number;
+  image: string;        // Variant image
+  sku: string;          // Variant SKU
+  color: string;        // Variant color
 }
 
 interface CartState {
   items: CartItem[];
-  addItem: (product: Product) => void;
-  removeItem: (id: number) => void;
-  updateQuantity: (id: number, quantity: number) => void;
+  addItem: (item: CartItem) => void;
+  removeItem: (id: string) => void;
+  updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
   itemCount: () => number;
   total: () => number;
@@ -21,20 +28,20 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
 
-      addItem: (product) =>
+      addItem: (item) =>
         set((state) => {
-          const existing = state.items.find((item) => item.id === product.id);
+          const existing = state.items.find((i) => i.id === item.id);
           if (existing) {
             return {
-              items: state.items.map((item) =>
-                item.id === product.id
-                  ? { ...item, quantity: item.quantity + 1 }
-                  : item
+              items: state.items.map((i) =>
+                i.id === item.id
+                  ? { ...i, quantity: i.quantity + item.quantity }
+                  : i
               ),
             };
           }
           return {
-            items: [...state.items, { ...product, quantity: 1 }],
+            items: [...state.items, item],
           };
         }),
 
@@ -58,7 +65,7 @@ export const useCartStore = create<CartState>()(
         get().items.reduce((sum, item) => sum + item.price * item.quantity, 0),
     }),
     {
-      name: 'handloomvilla-cart', // persists in localStorage
+      name: 'handloomvilla-cart',
     }
   )
 );

@@ -1,9 +1,9 @@
+// src/app/page.tsx
 'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
 import { useProductStore } from '@/lib/productStore';
-// import ProductCard from '@/components/ProductCard';
 
 export default function Home() {
   const products = useProductStore(state => state.products) || [];
@@ -105,15 +105,51 @@ export default function Home() {
             </p>
           </div>
 
-          {/* <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {featuredProducts.length > 0 ? (
-              featuredProducts.map(product => <ProductCard key={product.id} product={product} />)
+              featuredProducts.map(product => (
+                <div
+                  key={product.id}
+                  className="group overflow-hidden rounded-2xl bg-white shadow transition-all hover:shadow-xl"
+                >
+                  <div className="relative aspect-[3/4] overflow-hidden">
+                    <Image
+                      src={product.image || '/placeholder-image.jpg'}
+                      alt={product.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+
+                  <div className="p-5">
+                    <h3 className="line-clamp-2 text-lg font-semibold text-gray-900">
+                      {product.name}
+                    </h3>
+                    <p className="mt-1 line-clamp-2 text-sm text-gray-600">{product.description}</p>
+
+                    <div className="mt-3 flex items-end justify-between">
+                      <div>
+                        <span className="text-xl font-bold text-[var(--accent)]">
+                          LKR {product.basePrice}
+                        </span>
+                      </div>
+                      <Link
+                        href={`/product/${product.id}`}
+                        className="rounded-lg bg-[var(--accent)] px-5 py-2 text-sm text-white transition-colors hover:bg-[var(--accent-hover)]"
+                      >
+                        View Details
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))
             ) : (
               <p className="col-span-full text-center text-gray-500">
                 No featured products available.
               </p>
             )}
-          </div> */}
+          </div>
 
           <div className="mt-12 text-center">
             <Link
