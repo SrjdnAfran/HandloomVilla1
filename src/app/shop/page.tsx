@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useProductStore } from '@/lib/productStore';
+import { ProductVariant } from '@/types/product';
 
 export default function ShopPage() {
   const products = useProductStore(state => state.products);
@@ -58,7 +59,7 @@ export default function ShopPage() {
     if (!product.variants || !Array.isArray(product.variants)) {
       return [];
     }
-    return product.variants.map(variant => ({
+    return product.variants.map((variant: ProductVariant) => ({
       ...variant,
       productName: product.name || 'Unnamed Product',
       productCategory: product.category || 'Uncategorized',
@@ -96,7 +97,7 @@ export default function ShopPage() {
           type="text"
           placeholder="Search products..."
           value={searchTerm}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+          onChange={e => setSearchTerm(e.target.value)}
           className="flex-1 rounded-xl border border-gray-300 px-5 py-3 focus:border-[var(--accent)] focus:outline-none"
         />
 
