@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useProductStore } from '@/lib/productStore';
-import ProductCard from '@/components/ProductCard';
+// import ProductCard from '@/components/ProductCard';
 
 export default function Home() {
   const products = useProductStore(state => state.products) || [];
@@ -105,7 +105,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          {/* <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {featuredProducts.length > 0 ? (
               featuredProducts.map(product => <ProductCard key={product.id} product={product} />)
             ) : (
@@ -113,7 +113,7 @@ export default function Home() {
                 No featured products available.
               </p>
             )}
-          </div>
+          </div> */}
 
           <div className="mt-12 text-center">
             <Link
