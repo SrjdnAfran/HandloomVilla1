@@ -14,7 +14,7 @@ import {
   ChevronUp,
 } from 'lucide-react';
 import { useProductStore } from '@/lib/productStore';
-import { Product, ProductVariant } from '@/types/product';
+import { Product, ProductVariant } from '@/data/products';
 
 interface Category {
   id: number;
