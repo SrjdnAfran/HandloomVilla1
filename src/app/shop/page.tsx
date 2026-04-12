@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useProductStore } from '@/lib/productStore';
-import { ProductVariant } from '@/types/product';
+import { ProductVariant } from '@/data/products';
 
 export default function ShopPage() {
   const products = useProductStore(state => state.products);
