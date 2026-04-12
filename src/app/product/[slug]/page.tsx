@@ -6,11 +6,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, ShoppingCart, Plus, Minus, Check } from 'lucide-react';
 import { useProductStore, CartItem } from '@/lib/productStore';
+import { Product, ProductVariant } from '@/data/products';
 import { notFound } from 'next/navigation';
 
 export default function VariantPage({ params }: { params: Promise<{ slug: string }> }) {
-  const [variant, setVariant] = useState<any>(null);
-  const [product, setProduct] = useState<any>(null);
+  const [variant, setVariant] = useState<ProductVariant | null>(null);
+  const [product, setProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -22,11 +23,13 @@ export default function VariantPage({ params }: { params: Promise<{ slug: string
       const slug = p.slug;
 
       // Find the variant by slug
-      let foundVariant = null;
-      let parentProduct = null;
+      let foundVariant: ProductVariant | null = null;
+      let parentProduct: Product | null = null;
 
       for (const prod of products) {
-        const variant_match = prod.variants.find(v => v.slug === slug || v.id === slug);
+        const variant_match = prod.variants.find(
+          (v: ProductVariant) => v.slug === slug || v.id === slug
+        );
         if (variant_match) {
           foundVariant = variant_match;
           parentProduct = prod;
@@ -45,6 +48,8 @@ export default function VariantPage({ params }: { params: Promise<{ slug: string
   }, [params, products]);
 
   const handleAddToCart = () => {
+    if (!variant || !product) return;
+
     const cartItem: CartItem = {
       id: variant.id,
       productId: product.id,
@@ -71,7 +76,7 @@ export default function VariantPage({ params }: { params: Promise<{ slug: string
   }
 
   // Get other variants of the same product
-  const otherVariants = product.variants.filter((v: any) => v.id !== variant.id);
+  const otherVariants = product.variants.filter((v: ProductVariant) => v.id !== variant.id);
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -229,7 +234,7 @@ export default function VariantPage({ params }: { params: Promise<{ slug: string
         <div className="mt-16">
           <h2 className="mb-6 text-2xl font-bold">Other Available Colors</h2>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
-            {otherVariants.map((otherVariant: any) => (
+            {otherVariants.map((otherVariant: ProductVariant) => (
               <Link href={`/product/${otherVariant.slug || otherVariant.id}`} key={otherVariant.id}>
                 <div className="group cursor-pointer overflow-hidden rounded-2xl border transition-all hover:shadow-lg">
                   <div className="relative aspect-square overflow-hidden bg-gray-100">
