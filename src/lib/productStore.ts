@@ -1,7 +1,7 @@
 // lib/productStore.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Product, ProductVariant } from '@/types/product';
+import { Product, ProductVariant } from '@/data/products';
 
 export interface CartItem {
   id: string;
