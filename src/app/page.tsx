@@ -1,13 +1,32 @@
 // src/app/page.tsx
 'use client';
 
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useProductStore } from '@/lib/productStore';
+import { ProductVariant } from '@/data/products';
 
 export default function Home() {
   const products = useProductStore(state => state.products) || [];
-  const featuredProducts = products.slice(0, 4);
+  const [featuredVariants, setFeaturedVariants] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (products.length > 0) {
+      // Get first 4 variants as featured products
+      const variants = products.flatMap(
+        product =>
+          product.variants?.map((variant: ProductVariant) => ({
+            ...variant,
+            productName: product.name,
+            basePrice: product.basePrice,
+            productId: product.id,
+            productDescription: product.description,
+          })) || []
+      );
+      setFeaturedVariants(variants.slice(0, 4));
+    }
+  }, [products]);
 
   return (
     <>
@@ -22,7 +41,7 @@ export default function Home() {
           sizes="100vw"
         />
 
-        {/* Improved Gradient Overlay - Using your gradient style */}
+        {/* Improved Gradient Overlay */}
         <div
           className="absolute inset-0"
           style={{
@@ -31,13 +50,13 @@ export default function Home() {
           }}
         />
 
-        {/* Optional: Bottom gradient fade for smoother transition */}
+        {/* Bottom gradient fade */}
         <div className="absolute right-0 bottom-0 left-0 h-32 bg-gradient-to-t from-white to-transparent" />
 
         {/* Content */}
         <div className="relative mx-auto flex h-full max-w-screen-2xl flex-col items-start justify-center px-6 md:px-8 lg:px-12">
           <div className="max-w-3xl space-y-6 md:space-y-8">
-            {/* Small badge for elegance */}
+            {/* Small badge */}
             <div className="inline-flex items-center rounded-full bg-white/10 px-4 py-1.5 backdrop-blur-sm">
               <span className="text-xs font-medium tracking-wider text-white uppercase">
                 Since 1924
@@ -82,7 +101,7 @@ export default function Home() {
               </Link>
             </div>
 
-            {/* Optional: Scroll indicator */}
+            {/* Scroll indicator */}
             <div className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 md:flex">
               <span className="text-xs tracking-wider text-white/60 uppercase">Scroll</span>
               <div className="flex h-10 w-5 justify-center rounded-full border-2 border-white/30">
@@ -106,36 +125,44 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {featuredProducts.length > 0 ? (
-              featuredProducts.map(product => (
+            {featuredVariants.length > 0 ? (
+              featuredVariants.map(variant => (
                 <div
-                  key={product.id}
+                  key={variant.id}
                   className="group overflow-hidden rounded-2xl bg-white shadow transition-all hover:shadow-xl"
                 >
                   <div className="relative aspect-[3/4] overflow-hidden">
                     <Image
-                      src={product.image || '/placeholder-image.jpg'}
-                      alt={product.name}
+                      src={variant.image}
+                      alt={`${variant.productName} - ${variant.color}`}
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
+                    {variant.stock < 5 && variant.stock > 0 && (
+                      <div className="absolute top-3 right-3 rounded-full bg-yellow-500 px-3 py-1 text-xs text-white">
+                        Only {variant.stock} left
+                      </div>
+                    )}
                   </div>
 
                   <div className="p-5">
                     <h3 className="line-clamp-2 text-lg font-semibold text-gray-900">
-                      {product.name}
+                      {variant.productName}
                     </h3>
-                    <p className="mt-1 line-clamp-2 text-sm text-gray-600">{product.description}</p>
+                    <p className="mt-1 text-sm text-gray-600">{variant.color}</p>
+                    <p className="mt-1 font-mono text-xs text-gray-400">
+                      {variant.sku || variant.serialNumber}
+                    </p>
 
                     <div className="mt-3 flex items-end justify-between">
                       <div>
                         <span className="text-xl font-bold text-[var(--accent)]">
-                          LKR {product.basePrice}
+                          LKR {variant.basePrice}
                         </span>
                       </div>
                       <Link
-                        href={`/product/${product.id}`}
+                        href={`/product/${variant.slug || variant.id}`}
                         className="rounded-lg bg-[var(--accent)] px-5 py-2 text-sm text-white transition-colors hover:bg-[var(--accent-hover)]"
                       >
                         View Details
