@@ -9,7 +9,6 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-      // Add other hosts as needed
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
@@ -19,6 +18,12 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: '**.cloudinary.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
         port: '',
         pathname: '/**',
       },
