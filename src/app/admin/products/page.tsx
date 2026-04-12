@@ -551,7 +551,7 @@ export default function AdminProductsPage() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                      {product.variants.map(variant => (
+                      {product.variants.map((variant: ProductVariant) => (
                         <div
                           key={variant.id}
                           className="overflow-hidden rounded-2xl border transition-all duration-300 hover:shadow-xl"
