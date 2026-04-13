@@ -15,7 +15,7 @@ export default function Header() {
       className="sticky top-0 z-50 w-full shadow-sm backdrop-blur-md"
       style={{
         background:
-          'linear-gradient(to right, rgba(0, 13, 51, 0.91) 0%, rgba(101, 101, 101, 0.91) 100%)',
+          'linear-gradient(to right, rgba(0, 13, 51, 0.91) 0%, rgba(0, 48, 112, 0.91) 100%)',
       }}
     >
       <div className="mx-auto flex h-20 max-w-screen-2xl items-center justify-between px-6 lg:px-12">
