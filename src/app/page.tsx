@@ -32,7 +32,7 @@ export default function Home() {
         return product.variants.map((variant: ProductVariant) => ({
           ...variant,
           productName: product.name || 'Product',
-          basePrice: variant.basePrice || product.basePrice || 0,
+          basePrice: product.basePrice || 0,
           productId: product.id,
           productDescription: product.description || '',
         }));
