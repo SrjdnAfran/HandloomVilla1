@@ -18,27 +18,25 @@ import {
   Clock,
   Sparkles,
   ArrowRight,
-  Play,
 } from 'lucide-react';
 
 export default function Home() {
   const products = useProductStore(state => state.products) || [];
   const [featuredVariants, setFeaturedVariants] = useState<any[]>([]);
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
 
   useEffect(() => {
-    if (products.length > 0) {
-      // Get first 4 variants as featured products
-      const variants = products.flatMap(
-        product =>
-          product.variants?.map((variant: ProductVariant) => ({
-            ...variant,
-            productName: product.name,
-            basePrice: product.basePrice,
-            productId: product.id,
-            productDescription: product.description,
-          })) || []
-      );
+    if (products && products.length > 0) {
+      // Safely extract variants with error handling
+      const variants = products.flatMap(product => {
+        if (!product || !product.variants) return [];
+        return product.variants.map((variant: ProductVariant) => ({
+          ...variant,
+          productName: product.name || 'Product',
+          basePrice: variant.basePrice || product.basePrice || 0,
+          productId: product.id,
+          productDescription: product.description || '',
+        }));
+      });
       setFeaturedVariants(variants.slice(0, 4));
     }
   }, [products]);
@@ -49,21 +47,18 @@ export default function Home() {
       location: 'Mumbai, India',
       rating: 5,
       text: 'Absolutely stunning craftsmanship! The saree exceeded my expectations. The fabric quality is exceptional and the colors are vibrant even after multiple washes.',
-      image: 'https://randomuser.me/api/portraits/women/1.jpg',
     },
     {
       name: 'Michael Chen',
       location: 'Singapore',
       rating: 5,
       text: 'I bought a kurta for my wedding and received so many compliments. The attention to detail and traditional weaving techniques are remarkable.',
-      image: 'https://randomuser.me/api/portraits/men/2.jpg',
     },
     {
       name: 'Emma Williams',
       location: 'London, UK',
       rating: 5,
       text: 'Beautiful handloom products with excellent customer service. Shipping was fast and packaging was elegant. Will definitely order again!',
-      image: 'https://randomuser.me/api/portraits/women/3.jpg',
     },
   ];
 
@@ -93,6 +88,12 @@ export default function Home() {
       color: 'from-purple-400 to-purple-600',
     },
   ];
+
+  // Helper function to safely format price
+  const formatPrice = (price: number | undefined | null) => {
+    if (!price || isNaN(price)) return '0';
+    return price.toLocaleString();
+  };
 
   return (
     <>
@@ -192,7 +193,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Benefits Section - New */}
+      {/* Benefits Section */}
       <section className="relative z-20 -mt-20 px-6">
         <div className="container mx-auto">
           <div className="grid gap-6 md:grid-cols-4">
@@ -237,14 +238,14 @@ export default function Home() {
             {featuredVariants.length > 0 ? (
               featuredVariants.map((variant, index) => (
                 <div
-                  key={variant.id}
+                  key={variant.id || index}
                   className="group animate-in fade-in slide-in-from-bottom-4 rounded-2xl bg-white shadow-lg transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className="relative aspect-[3/4] overflow-hidden rounded-t-2xl">
                     <Image
-                      src={variant.image}
-                      alt={`${variant.productName} - ${variant.color}`}
+                      src={variant.image || '/placeholder-image.jpg'}
+                      alt={`${variant.productName || 'Product'} - ${variant.color || ''}`}
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                       className="object-cover transition-transform duration-700 group-hover:scale-110"
@@ -252,7 +253,7 @@ export default function Home() {
                     {/* Overlay with quick view */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-                    {variant.stock < 5 && variant.stock > 0 && (
+                    {variant.stock && variant.stock < 5 && variant.stock > 0 && (
                       <div className="absolute top-3 right-3 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-3 py-1 text-xs font-semibold text-white shadow-lg">
                         Only {variant.stock} left
                       </div>
@@ -282,17 +283,17 @@ export default function Home() {
                       <span className="text-xs text-gray-500">(24 reviews)</span>
                     </div>
                     <h3 className="line-clamp-2 font-serif text-lg font-bold text-gray-900">
-                      {variant.productName}
+                      {variant.productName || 'Product Name'}
                     </h3>
-                    <p className="mt-1 text-sm text-gray-600">{variant.color}</p>
+                    <p className="mt-1 text-sm text-gray-600">{variant.color || 'Standard'}</p>
                     <p className="mt-1 font-mono text-xs text-gray-400">
-                      {variant.sku || variant.serialNumber}
+                      {variant.sku || variant.serialNumber || 'SKU-001'}
                     </p>
 
                     <div className="mt-4 flex items-end justify-between">
                       <div>
                         <span className="text-2xl font-bold text-[#002361]">
-                          LKR {variant.basePrice.toLocaleString()}
+                          LKR {formatPrice(variant.basePrice)}
                         </span>
                       </div>
                       <Link
@@ -307,9 +308,9 @@ export default function Home() {
                 </div>
               ))
             ) : (
-              <p className="col-span-full text-center text-gray-500">
-                No featured products available.
-              </p>
+              <div className="col-span-full py-12 text-center">
+                <p className="text-gray-500">Loading featured products...</p>
+              </div>
             )}
           </div>
 
@@ -325,16 +326,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials Section - New */}
+      {/* Testimonials Section */}
       <section className="relative overflow-hidden bg-gradient-to-r from-[#002361] to-[#003887] py-24 text-white">
-        <div
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage:
-              'url(\'data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.1"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\')',
-            backgroundRepeat: 'repeat',
-          }}
-        />
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 bg-black/20" />
+        </div>
 
         <div className="relative container mx-auto px-6">
           <div className="mb-12 text-center">
@@ -362,7 +358,7 @@ export default function Home() {
                 </div>
                 <p className="mb-6 leading-relaxed text-gray-100 italic">"{testimonial.text}"</p>
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-amber-400 to-amber-600">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-amber-600">
                     <span className="text-lg font-bold">{testimonial.name[0]}</span>
                   </div>
                   <div>
@@ -376,7 +372,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section - New */}
+      {/* CTA Section */}
       <section className="bg-gradient-to-b from-gray-50 to-white py-24">
         <div className="container mx-auto px-6 text-center">
           <div className="mx-auto max-w-3xl">
