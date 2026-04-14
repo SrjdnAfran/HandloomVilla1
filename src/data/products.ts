@@ -1,4 +1,4 @@
-// types/product.ts
+
 export interface ProductVariant {
   id: string;
   color: string;

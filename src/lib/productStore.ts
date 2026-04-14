@@ -1,6 +1,6 @@
 // lib/productStore.ts
 import { create } from 'zustand';
-import { Product, ProductVariant } from '@/types/product';
+import { Product, ProductVariant } from '@/data/products';
 
 interface ProductState {
   products: Product[];
