@@ -7,11 +7,12 @@ const sql = neon(process.env.POSTGRES_URL!);
 // DELETE product
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
-    await sql`DELETE FROM products WHERE id = ${id}`;
+    const { id } = await params; // 👈 AWAIT the params
+    const productId = parseInt(id);
+    await sql`DELETE FROM products WHERE id = ${productId}`;
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('DELETE Error:', error);
@@ -22,10 +23,11 @@ export async function DELETE(
 // UPDATE product
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id } = await params; // 👈 AWAIT the params
+    const productId = parseInt(id);
     const updates = await request.json();
     
     await sql`
@@ -39,7 +41,7 @@ export async function PUT(
         base_price = COALESCE(${updates.basePrice}, base_price),
         materials = COALESCE(${updates.materials}, materials),
         care_instructions = COALESCE(${updates.careInstructions}, care_instructions)
-      WHERE id = ${id}
+      WHERE id = ${productId}
     `;
     
     return NextResponse.json({ success: true });

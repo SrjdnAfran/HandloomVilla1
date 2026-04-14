@@ -7,10 +7,11 @@ const sql = neon(process.env.POSTGRES_URL!);
 // DELETE variant
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string; variantId: string } }
+  { params }: { params: Promise<{ id: string; variantId: string }> }
 ) {
   try {
-    await sql`DELETE FROM variants WHERE id = ${params.variantId}`;
+    const { variantId } = await params; // 👈 AWAIT the params
+    await sql`DELETE FROM variants WHERE id = ${variantId}`;
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('DELETE Variant Error:', error);
@@ -21,9 +22,10 @@ export async function DELETE(
 // UPDATE variant
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string; variantId: string } }
+  { params }: { params: Promise<{ id: string; variantId: string }> }
 ) {
   try {
+    const { variantId } = await params; // 👈 AWAIT the params
     const updates = await request.json();
     
     await sql`
@@ -37,7 +39,7 @@ export async function PUT(
         sku = COALESCE(${updates.sku}, sku),
         slug = COALESCE(${updates.slug}, slug),
         is_default = COALESCE(${updates.isDefault}, is_default)
-      WHERE id = ${params.variantId}
+      WHERE id = ${variantId}
     `;
     
     return NextResponse.json({ success: true });

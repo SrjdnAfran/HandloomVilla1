@@ -6,10 +6,11 @@ const sql = neon(process.env.POSTGRES_URL!);
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const productId = parseInt(params.id);
+    const { id } = await params; // 👈 AWAIT the params
+    const productId = parseInt(id);
     const { variant } = await request.json();
     
     await sql`
