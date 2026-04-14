@@ -1,13 +1,14 @@
+// src/app/product/[slug]/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, ShoppingCart, Plus, Minus, Check } from 'lucide-react';
-import { useProductStore, CartItem } from '@/lib/productStore';
+import { useProductStore } from '@/lib/productStore';
+import { useCartStore, CartItem } from '@/lib/cartStore'; // 👈 Import CartItem from cartStore
 import { Product, ProductVariant } from '@/data/products';
 import { notFound } from 'next/navigation';
-import { useCartStore } from '@/lib/cartStore';
 
 export default function VariantPage({ params }: { params: Promise<{ slug: string }> }) {
   const [variant, setVariant] = useState<ProductVariant | null>(null);
@@ -16,13 +17,12 @@ export default function VariantPage({ params }: { params: Promise<{ slug: string
   const [showSuccess, setShowSuccess] = useState(false);
 
   const products = useProductStore(state => state.products);
-  const addToCart = useCartStore(state => state.addItem);
+  const addToCart = useCartStore(state => state.addItem); // 👈 Use cartStore for cart actions
 
   useEffect(() => {
     params.then(async p => {
       const slug = p.slug;
 
-      // Find the variant by slug
       let foundVariant: ProductVariant | null = null;
       let parentProduct: Product | null = null;
 
@@ -50,7 +50,7 @@ export default function VariantPage({ params }: { params: Promise<{ slug: string
   const handleAddToCart = () => {
     if (!variant || !product) return;
 
-    addToCart({
+    const cartItem: CartItem = {
       id: variant.id,
       productId: product.id,
       name: `${product.name} - ${variant.color}`,
@@ -59,12 +59,15 @@ export default function VariantPage({ params }: { params: Promise<{ slug: string
       image: variant.image,
       sku: variant.sku || variant.serialNumber,
       color: variant.color,
-    });
+    };
+
+    addToCart(cartItem);
 
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 3000);
   };
 
+  // Rest of your component remains the same...
   if (!product || !variant) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -73,7 +76,6 @@ export default function VariantPage({ params }: { params: Promise<{ slug: string
     );
   }
 
-  // Get other variants of the same product
   const otherVariants = product.variants.filter((v: ProductVariant) => v.id !== variant.id);
 
   return (
@@ -110,7 +112,6 @@ export default function VariantPage({ params }: { params: Promise<{ slug: string
 
         {/* Product Info */}
         <div>
-          {/* Breadcrumb */}
           <div className="mb-4 text-sm text-gray-500">
             <Link href="/shop" className="hover:underline">
               Shop
@@ -126,12 +127,10 @@ export default function VariantPage({ params }: { params: Promise<{ slug: string
             {product.category} {product.subCategory && `- ${product.subCategory}`}
           </p>
 
-          {/* SKU */}
           <p className="mb-4 font-mono text-xs text-gray-400">
             SKU: {variant.sku || variant.serialNumber}
           </p>
 
-          {/* Color Display */}
           <div className="mb-4 flex items-center gap-2">
             <span className="text-sm font-medium">Color:</span>
             <div className="flex items-center gap-2">
@@ -151,7 +150,6 @@ export default function VariantPage({ params }: { params: Promise<{ slug: string
 
           <p className="mb-8 leading-relaxed text-gray-700">{product.description}</p>
 
-          {/* Stock Status */}
           <div className="mb-6 rounded-xl bg-gray-50 p-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Availability:</span>
@@ -169,7 +167,6 @@ export default function VariantPage({ params }: { params: Promise<{ slug: string
             </div>
           </div>
 
-          {/* Quantity Selector */}
           <div className="mb-8">
             <label className="mb-2 block text-sm font-medium">Quantity</label>
             <div className="flex items-center gap-4">
@@ -194,7 +191,6 @@ export default function VariantPage({ params }: { params: Promise<{ slug: string
             </div>
           </div>
 
-          {/* Add to Cart Button */}
           <button
             onClick={handleAddToCart}
             disabled={variant.stock === 0}
@@ -210,7 +206,6 @@ export default function VariantPage({ params }: { params: Promise<{ slug: string
               : 'Out of Stock'}
           </button>
 
-          {/* Product Details Section */}
           <div className="mt-8 border-t pt-8">
             <h3 className="mb-3 font-semibold">Product Details</h3>
             {product.materials && (
@@ -227,7 +222,6 @@ export default function VariantPage({ params }: { params: Promise<{ slug: string
         </div>
       </div>
 
-      {/* Other Variants Section */}
       {otherVariants.length > 0 && (
         <div className="mt-16">
           <h2 className="mb-6 text-2xl font-bold">Other Available Colors</h2>
