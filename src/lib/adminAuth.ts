@@ -34,8 +34,8 @@ export function clearAdminAuthCookie(response: NextResponse): NextResponse {
   return response;
 }
 
-// Check if admin is authenticated (server-side) - FIXED for Next.js 16
+// Check if admin is authenticated (server-side)
 export async function isAdminAuthenticated(): Promise<boolean> {
-  const cookieStore = await cookies(); // Add await here
+  const cookieStore = await cookies();
   return cookieStore.get('admin_auth')?.value === 'true';
 }

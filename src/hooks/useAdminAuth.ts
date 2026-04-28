@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { isAdminSessionValid, setAdminAuthenticated, logoutAdmin } from '@/lib/adminAuth';
 
 export function useAdminAuth() {
   const router = useRouter();
@@ -10,29 +9,55 @@ export function useAdminAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const isValid = isAdminSessionValid();
-    setIsAuthenticated(isValid);
-    setIsLoading(false);
-    
-    if (!isValid) {
-      setAdminAuthenticated(false);
-    }
+    checkAuth();
   }, []);
 
-  const login = (email: string, password: string): boolean => {
-    // Simple hardcoded check
-    if (email === 'admin@handloomvilla.com' && password === 'Admin@123') {
-      setAdminAuthenticated(true);
-      setIsAuthenticated(true);
-      return true;
+  const checkAuth = async () => {
+    try {
+      const response = await fetch('/api/admin/me');
+      const data = await response.json();
+      setIsAuthenticated(data.authenticated);
+    } catch (error) {
+      setIsAuthenticated(false);
+    } finally {
+      setIsLoading(false);
     }
-    return false;
   };
 
-  const logout = () => {
-    logoutAdmin();
-    setIsAuthenticated(false);
-    router.push('/admin-login');
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/admin/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setIsAuthenticated(true);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' });
+      setIsAuthenticated(false);
+      router.push('/admin-login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  const requireAuth = () => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/admin-login');
+    }
   };
 
   return {
@@ -40,5 +65,6 @@ export function useAdminAuth() {
     isAuthenticated,
     login,
     logout,
+    requireAuth,
   };
 }
