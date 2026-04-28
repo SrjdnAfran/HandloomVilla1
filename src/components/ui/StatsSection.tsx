@@ -14,17 +14,30 @@ import {
   Sparkles,
 } from 'lucide-react';
 
-type StatItem = {
+// Define valid icon names as a type
+export type IconName =
+  | 'Users'
+  | 'Package'
+  | 'Globe'
+  | 'Heart'
+  | 'Clock'
+  | 'Award'
+  | 'Star'
+  | 'Truck'
+  | 'Leaf'
+  | 'Sparkles';
+
+export type StatItem = {
   value: number;
   suffix?: string;
   label: string;
-  iconName: keyof typeof iconMap; // Use icon name instead of component
+  iconName: IconName; // Use the specific type
   isYear?: boolean;
   prefix?: string;
 };
 
 // Map icon names to actual components
-const iconMap = {
+const iconMap: Record<IconName, React.ElementType> = {
   Users,
   Package,
   Globe,
@@ -44,6 +57,7 @@ const defaultStats: StatItem[] = [
   { value: 30, suffix: '+', label: 'Countries Served', iconName: 'Globe' },
 ];
 
+// Individual Stat Card Component
 function StatCard({ stat, index }: { stat: StatItem; index: number }) {
   const [count, setCount] = useState(stat.isYear ? stat.value : 0);
   const [isVisible, setIsVisible] = useState(false);
@@ -90,15 +104,21 @@ function StatCard({ stat, index }: { stat: StatItem; index: number }) {
     <div
       id={`stat-${index}`}
       className="group transform text-center transition-all duration-500 hover:scale-105"
+      style={{ animationDelay: `${index * 100}ms` }}
     >
+      {/* Icon Circle */}
       <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/20 shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:bg-white/30">
         <Icon className="h-8 w-8 text-white" />
       </div>
+
+      {/* Number */}
       <div className="text-4xl font-bold text-white md:text-5xl lg:text-6xl">
         {stat.prefix && <span className="text-2xl md:text-3xl">{stat.prefix}</span>}
         {stat.isYear ? stat.value : count.toLocaleString()}
         {stat.suffix && <span className="text-2xl md:text-3xl">{stat.suffix}</span>}
       </div>
+
+      {/* Label */}
       <p className="mt-2 text-sm font-medium text-white/80 md:text-base">{stat.label}</p>
     </div>
   );
@@ -123,6 +143,7 @@ export default function StatsSection({
 }: StatsSectionProps) {
   return (
     <section className={`relative overflow-hidden bg-gradient-to-r ${bgColor} px-6 py-16 md:py-20`}>
+      {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div
           className="absolute inset-0 bg-repeat"
@@ -132,10 +153,12 @@ export default function StatsSection({
         />
       </div>
 
+      {/* Decorative blur circles */}
       <div className="absolute top-0 right-0 h-64 w-64 rounded-full bg-white/5 blur-3xl" />
       <div className="absolute bottom-0 left-0 h-64 w-64 rounded-full bg-white/5 blur-3xl" />
 
       <div className="relative mx-auto max-w-6xl">
+        {/* Optional Title Section */}
         {title && (
           <div className="mb-12 text-center">
             <h2 className={`text-3xl font-bold ${textColor} md:text-4xl lg:text-5xl`}>{title}</h2>
@@ -145,6 +168,7 @@ export default function StatsSection({
           </div>
         )}
 
+        {/* Stats Grid */}
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat, index) => (
             <StatCard key={index} stat={stat} index={index} />

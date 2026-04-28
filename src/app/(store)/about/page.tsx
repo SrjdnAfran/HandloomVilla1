@@ -10,10 +10,10 @@ import StatsSection from '@/components/ui/StatsSection';
 import AboutCTA from '@/components/about/AboutCTA';
 
 const aboutStats = [
-  { value: 100, suffix: '+', label: 'Skilled Artisans', iconName: 'Users' },
-  { value: 50000, suffix: '+', label: 'Happy Customers', iconName: 'Heart' },
-  { value: 1924, label: 'Year Established', iconName: 'Clock', isYear: true },
-  { value: 30, suffix: '+', label: 'Countries Served', iconName: 'Globe' },
+  { value: 100, suffix: '+', label: 'Skilled Artisans', iconName: 'Users' as const },
+  { value: 50000, suffix: '+', label: 'Happy Customers', iconName: 'Heart' as const },
+  { value: 1924, label: 'Year Established', iconName: 'Clock' as const, isYear: true },
+  { value: 30, suffix: '+', label: 'Countries Served', iconName: 'Globe' as const },
 ];
 
 export default function AboutPage() {

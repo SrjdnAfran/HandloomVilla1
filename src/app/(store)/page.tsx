@@ -15,10 +15,10 @@ const WhyChooseUs = lazy(() => import('@/components/home/WhyChooseUs'));
 const BlogTeaser = lazy(() => import('@/components/home/BlogTeaser'));
 
 const homepageStats = [
-  { value: 100, suffix: '+', label: 'Skilled Artisans', iconName: 'Users' },
-  { value: 50000, suffix: '+', label: 'Happy Customers', iconName: 'Heart' },
-  { value: 100000, suffix: '+', label: 'Products Sold', iconName: 'Package' },
-  { value: 30, suffix: '+', label: 'Countries Served', iconName: 'Globe' },
+  { value: 100, suffix: '+', label: 'Skilled Artisans', iconName: 'Users' as const },
+  { value: 50000, suffix: '+', label: 'Happy Customers', iconName: 'Heart' as const },
+  { value: 100000, suffix: '+', label: 'Products Sold', iconName: 'Package' as const },
+  { value: 30, suffix: '+', label: 'Countries Served', iconName: 'Globe' as const },
 ];
 
 // Loading fallback component
