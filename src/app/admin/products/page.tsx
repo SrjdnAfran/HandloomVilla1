@@ -12,6 +12,10 @@ import {
   Copy,
   ChevronDown,
   ChevronUp,
+  Package,
+  Tag,
+  DollarSign,
+  Layers,
 } from 'lucide-react';
 import { useProductStore } from '@/lib/productStore';
 import { Product, ProductVariant } from '@/data/products';
@@ -448,7 +452,7 @@ export default function AdminProductsPage() {
     <div className="mx-auto max-w-7xl px-4 py-8">
       <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="font-serif text-4xl font-bold">Products Management</h1>
+          <h1 className="font-serif text-4xl font-bold text-[#5C2E0B]">Products Management</h1>
           <p className="mt-2 text-gray-600">
             Total Products: {products.length} | Total Variants:{' '}
             {products.reduce((sum, p) => sum + p.variants.length, 0)}
@@ -456,7 +460,7 @@ export default function AdminProductsPage() {
         </div>
         <button
           onClick={() => setShowProductForm(true)}
-          className="flex w-full items-center justify-center gap-3 rounded-xl bg-[var(--accent)] px-6 py-3 text-white md:w-auto"
+          className="flex w-full items-center justify-center gap-3 rounded-xl bg-[#8B4513] px-6 py-3 text-white transition-all hover:bg-[#5C2E0B] hover:shadow-lg md:w-auto"
         >
           <Plus size={22} /> Add New Product
         </button>
@@ -466,22 +470,22 @@ export default function AdminProductsPage() {
       <div className="space-y-8">
         {products.length === 0 ? (
           <div className="rounded-3xl bg-white p-20 text-center text-gray-500">
-            No products yet. Click "Add New Product" to start.
+            No products yet. Click &quot;Add New Product&quot; to start.
           </div>
         ) : (
           products.map(product => (
             <div key={product.id} className="overflow-hidden rounded-3xl bg-white shadow-lg">
               {/* Product Header */}
-              <div className="flex flex-col gap-4 border-b bg-gradient-to-r from-gray-50 to-white p-6 md:flex-row md:items-start md:justify-between">
+              <div className="flex flex-col gap-4 border-b bg-gradient-to-r from-amber-50/30 to-white p-6 md:flex-row md:items-start md:justify-between">
                 <div className="flex-1">
-                  <div className="mb-2 flex items-center gap-3">
-                    <h3 className="text-2xl font-bold">{product.name}</h3>
-                    <span className="rounded-full bg-[var(--accent)] px-3 py-1 text-sm text-white">
+                  <div className="mb-2 flex flex-wrap items-center gap-3">
+                    <h3 className="text-2xl font-bold text-[#5C2E0B]">{product.name}</h3>
+                    <span className="rounded-full bg-[#8B4513] px-3 py-1 text-sm text-white">
                       {product.variants.length}{' '}
                       {product.variants.length === 1 ? 'Variant' : 'Variants'}
                     </span>
                     {product.skuPrefix && (
-                      <span className="rounded-full bg-gray-200 px-3 py-1 font-mono text-sm text-gray-700">
+                      <span className="rounded-full bg-amber-100 px-3 py-1 font-mono text-sm text-[#8B4513]">
                         Prefix: {product.skuPrefix}
                       </span>
                     )}
@@ -500,7 +504,7 @@ export default function AdminProductsPage() {
                       setSelectedProductId(product.id);
                       setShowVariantModal(true);
                     }}
-                    className="flex items-center gap-2 rounded-xl bg-green-600 px-5 py-2 text-white hover:bg-green-700"
+                    className="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2 text-white transition-all hover:bg-emerald-700"
                   >
                     <Plus size={18} /> Add Variant
                   </button>
@@ -511,13 +515,13 @@ export default function AdminProductsPage() {
                       setBulkVariantForm(prev => ({ ...prev, startSerial: nextSerial }));
                       setShowBulkVariantModal(true);
                     }}
-                    className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-white hover:bg-blue-700"
+                    className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-white transition-all hover:bg-blue-700"
                   >
                     <Upload size={18} /> Bulk Add
                   </button>
                   <button
                     onClick={() => handleEditProduct(product)}
-                    className="rounded-xl bg-blue-600 px-5 py-2 text-white transition-colors hover:bg-blue-700"
+                    className="rounded-xl bg-amber-600 px-5 py-2 text-white transition-colors hover:bg-amber-700"
                   >
                     <Pencil size={18} />
                   </button>
@@ -547,26 +551,43 @@ export default function AdminProductsPage() {
                 <div className="p-6">
                   {product.variants.length === 0 ? (
                     <div className="py-12 text-center text-gray-500">
-                      <p>No variants yet. Click "Add Variant" to add colors/options.</p>
+                      <Package className="mx-auto mb-3 h-12 w-12 text-gray-300" />
+                      <p>No variants yet. Click &quot;Add Variant&quot; to add colors/options.</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                       {product.variants.map((variant: ProductVariant) => (
                         <div
                           key={variant.id}
-                          className="overflow-hidden rounded-2xl border transition-all duration-300 hover:shadow-xl"
+                          className="overflow-hidden rounded-2xl border border-gray-100 transition-all duration-300 hover:shadow-xl"
                         >
-                          <div className="relative h-64 bg-gray-100">
-                            <Image
-                              src={variant.image}
-                              alt={variant.color}
-                              fill
-                              sizes="(max-width: 768px) 100vw, 33vw"
-                              className="object-cover"
-                            />
+                          <div className="relative h-56 bg-gradient-to-br from-amber-100 to-amber-50">
+                            {variant.image ? (
+                              <Image
+                                src={variant.image}
+                                alt={variant.color}
+                                fill
+                                sizes="(max-width: 768px) 100vw, 33vw"
+                                className="object-cover"
+                              />
+                            ) : (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <Package className="h-12 w-12 text-amber-300" />
+                              </div>
+                            )}
                             {variant.isDefault && (
-                              <span className="absolute top-2 left-2 rounded-full bg-yellow-500 px-2 py-1 text-xs text-white">
+                              <span className="absolute top-2 left-2 rounded-full bg-amber-500 px-2 py-1 text-xs font-semibold text-white shadow-md">
                                 Default
+                              </span>
+                            )}
+                            {variant.stock < 5 && variant.stock > 0 && (
+                              <span className="absolute top-2 right-2 rounded-full bg-yellow-500 px-2 py-1 text-xs font-semibold text-white shadow-md">
+                                Low Stock
+                              </span>
+                            )}
+                            {variant.stock === 0 && (
+                              <span className="absolute top-2 right-2 rounded-full bg-red-500 px-2 py-1 text-xs font-semibold text-white shadow-md">
+                                Out of Stock
                               </span>
                             )}
                           </div>
@@ -579,40 +600,42 @@ export default function AdminProductsPage() {
                                     style={{ backgroundColor: variant.colorCode }}
                                   />
                                 )}
-                                <h4 className="text-lg font-semibold">{variant.color}</h4>
+                                <h4 className="text-lg font-semibold text-gray-900">
+                                  {variant.color}
+                                </h4>
                               </div>
                               <button
                                 onClick={() =>
                                   navigator.clipboard.writeText(variant.sku || variant.serialNumber)
                                 }
-                                className="text-gray-400 transition-colors hover:text-gray-600"
+                                className="rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-[#8B4513]"
                                 title="Copy SKU"
                               >
                                 <Copy size={16} />
                               </button>
                             </div>
-                            <p className="mb-2 font-mono text-xs text-gray-500">
+                            <p className="mb-1 font-mono text-xs text-gray-500">
                               SKU: {variant.sku || variant.serialNumber}
                             </p>
                             <p className="mb-3 text-sm">
                               Stock:{' '}
                               <span
-                                className={`font-medium ${variant.stock < 5 ? 'text-red-600' : 'text-green-600'}`}
+                                className={`font-semibold ${variant.stock < 5 ? 'text-red-600' : 'text-green-600'}`}
                               >
                                 {variant.stock}
                               </span>{' '}
                               units
                             </p>
-                            <div className="flex gap-2 overflow-x-auto pb-2 md:overflow-visible">
+                            <div className="flex gap-2">
                               <button
                                 onClick={() => handleEditVariant(product.id, variant)}
-                                className="flex-1 rounded-lg bg-blue-600 py-2 text-sm text-white transition-colors hover:bg-blue-700"
+                                className="flex-1 rounded-lg bg-amber-600 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-700"
                               >
                                 <Pencil size={14} className="mr-1 inline" /> Edit
                               </button>
                               <button
                                 onClick={() => handleDeleteVariant(product.id, variant.id)}
-                                className="flex-1 rounded-lg bg-red-600 py-2 text-sm text-white transition-colors hover:bg-red-700"
+                                className="flex-1 rounded-lg bg-red-600 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"
                               >
                                 <Trash2 size={14} className="mr-1 inline" /> Delete
                               </button>
@@ -632,167 +655,185 @@ export default function AdminProductsPage() {
       {/* Product Creation/Edit Modal */}
       {showProductForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-black/70 p-4">
-          <div className="relative max-h-[90vh] w-full max-w-lg overflow-auto rounded-3xl bg-white md:max-w-2xl">
+          <div className="relative max-h-[90vh] w-full max-w-lg overflow-auto rounded-3xl bg-white shadow-2xl md:max-w-2xl">
             <button
               onClick={resetProductForm}
-              className="absolute top-6 right-6 z-10 rounded-full p-2 transition-colors hover:bg-gray-100"
+              className="absolute top-4 right-4 z-10 rounded-full p-2 transition-colors hover:bg-gray-100"
             >
               <X size={24} className="text-gray-500" />
             </button>
 
-            <div className="p-4 md:p-8">
-              <h2 className="mb-6 text-3xl font-bold">
+            <div className="p-6 md:p-8">
+              <h2 className="mb-2 text-3xl font-bold text-[#5C2E0B]">
                 {editingProduct ? 'Edit Product' : 'Add New Product'}
               </h2>
-              <p className="mb-6 text-gray-600">
+              <p className="mb-6 text-gray-500">
                 {editingProduct
                   ? 'Update product information'
                   : 'Create a product first, then add color variants'}
               </p>
 
-              <form onSubmit={handleProductSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                  <div className="md:col-span-2">
-                    <label className="mb-2 block text-sm font-medium">Product Name *</label>
+              <form onSubmit={handleProductSubmit} className="space-y-5">
+                <div className="space-y-5">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                      Product Name <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="text"
                       value={productForm.name}
                       onChange={e => setProductForm({ ...productForm, name: e.target.value })}
-                      className="w-full rounded-xl border px-4 py-3 focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
+                      className="w-full rounded-lg border border-gray-200 px-4 py-2.5 focus:border-[#8B4513] focus:ring-2 focus:ring-amber-100 focus:outline-none"
                       placeholder="e.g., Handloom Cotton Saree"
                       required
                     />
                   </div>
 
-                  <div>
-                    <label className="mb-2 block text-sm font-medium">
-                      SKU Prefix (3 letters) *
-                    </label>
-                    <input
-                      type="text"
-                      value={productForm.skuPrefix}
-                      onChange={e =>
-                        setProductForm({
-                          ...productForm,
-                          skuPrefix: e.target.value.toUpperCase().slice(0, 3),
-                        })
-                      }
-                      className="w-full rounded-xl border px-4 py-3 font-mono uppercase focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
-                      placeholder="e.g., HCS, SAR, KUR"
-                      maxLength={3}
-                      required
-                    />
-                    <p className="mt-1 text-xs text-gray-500">
-                      3-letter code that will prefix all variant SKUs (e.g., HCS-RED-001)
-                    </p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-gray-700">
+                        SKU Prefix <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={productForm.skuPrefix}
+                        onChange={e =>
+                          setProductForm({
+                            ...productForm,
+                            skuPrefix: e.target.value.toUpperCase().slice(0, 3),
+                          })
+                        }
+                        className="w-full rounded-lg border border-gray-200 px-4 py-2.5 font-mono uppercase focus:border-[#8B4513] focus:ring-2 focus:ring-amber-100 focus:outline-none"
+                        placeholder="HCS"
+                        maxLength={3}
+                        required
+                      />
+                      <p className="mt-1 text-xs text-gray-400">
+                        3-letter prefix for all variant SKUs
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-gray-700">
+                        Base Price (LKR) <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        value={productForm.basePrice}
+                        onChange={e =>
+                          setProductForm({ ...productForm, basePrice: Number(e.target.value) })
+                        }
+                        className="w-full rounded-lg border border-gray-200 px-4 py-2.5 focus:border-[#8B4513] focus:ring-2 focus:ring-amber-100 focus:outline-none"
+                        required
+                      />
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="mb-2 block text-sm font-medium">Base Price (LKR) *</label>
-                    <input
-                      type="number"
-                      value={productForm.basePrice}
-                      onChange={e =>
-                        setProductForm({ ...productForm, basePrice: Number(e.target.value) })
-                      }
-                      className="w-full rounded-xl border px-4 py-3 focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-sm font-medium">Category *</label>
-                    <select
-                      value={productForm.category}
-                      onChange={e =>
-                        setProductForm({
-                          ...productForm,
-                          category: e.target.value,
-                          subCategory: '',
-                        })
-                      }
-                      className="w-full rounded-xl border px-4 py-3 focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
-                      required
-                    >
-                      <option value="">Select Category</option>
-                      {categories.map(c => (
-                        <option key={c.id} value={c.name}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-sm font-medium">Sub Category</label>
-                    <select
-                      value={productForm.subCategory}
-                      onChange={e =>
-                        setProductForm({ ...productForm, subCategory: e.target.value })
-                      }
-                      className="w-full rounded-xl border px-4 py-3 focus:ring-2 focus:ring-[var(--accent)] focus:outline-none disabled:bg-gray-100"
-                      disabled={!productForm.category}
-                    >
-                      <option value="">Select Sub Category</option>
-                      {categories
-                        .find(c => c.name === productForm.category)
-                        ?.subCategories.map((sub, i) => (
-                          <option key={i} value={sub}>
-                            {sub}
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-gray-700">
+                        Category <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={productForm.category}
+                        onChange={e =>
+                          setProductForm({
+                            ...productForm,
+                            category: e.target.value,
+                            subCategory: '',
+                          })
+                        }
+                        className="w-full rounded-lg border border-gray-200 px-4 py-2.5 focus:border-[#8B4513] focus:ring-2 focus:ring-amber-100 focus:outline-none"
+                        required
+                      >
+                        <option value="">Select Category</option>
+                        {categories.map(c => (
+                          <option key={c.id} value={c.name}>
+                            {c.name}
                           </option>
                         ))}
-                    </select>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="mb-1 block text-sm font-medium text-gray-700">
+                        Sub Category
+                      </label>
+                      <select
+                        value={productForm.subCategory}
+                        onChange={e =>
+                          setProductForm({ ...productForm, subCategory: e.target.value })
+                        }
+                        className="w-full rounded-lg border border-gray-200 px-4 py-2.5 focus:border-[#8B4513] focus:ring-2 focus:ring-amber-100 focus:outline-none disabled:bg-gray-100"
+                        disabled={!productForm.category}
+                      >
+                        <option value="">Select Sub Category</option>
+                        {categories
+                          .find(c => c.name === productForm.category)
+                          ?.subCategories.map((sub, i) => (
+                            <option key={i} value={sub}>
+                              {sub}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
                   </div>
 
-                  <div className="md:col-span-2">
-                    <label className="mb-2 block text-sm font-medium">Description</label>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                      Description
+                    </label>
                     <textarea
                       value={productForm.description}
                       onChange={e =>
                         setProductForm({ ...productForm, description: e.target.value })
                       }
                       rows={3}
-                      className="w-full rounded-xl border px-4 py-3 focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
+                      className="w-full rounded-lg border border-gray-200 px-4 py-2.5 focus:border-[#8B4513] focus:ring-2 focus:ring-amber-100 focus:outline-none"
                       placeholder="Product description..."
                     />
                   </div>
 
-                  <div className="md:col-span-2">
-                    <label className="mb-2 block text-sm font-medium">Materials & Fabric</label>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                      Materials & Fabric
+                    </label>
                     <input
                       type="text"
                       value={productForm.materials}
                       onChange={e => setProductForm({ ...productForm, materials: e.target.value })}
-                      className="w-full rounded-xl border px-4 py-3 focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
+                      className="w-full rounded-lg border border-gray-200 px-4 py-2.5 focus:border-[#8B4513] focus:ring-2 focus:ring-amber-100 focus:outline-none"
                       placeholder="e.g., 100% Cotton, Handloom"
                     />
                   </div>
 
-                  <div className="md:col-span-2">
-                    <label className="mb-2 block text-sm font-medium">Care Instructions</label>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                      Care Instructions
+                    </label>
                     <textarea
                       value={productForm.careInstructions}
                       onChange={e =>
                         setProductForm({ ...productForm, careInstructions: e.target.value })
                       }
                       rows={2}
-                      className="w-full rounded-xl border px-4 py-3 focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
+                      className="w-full rounded-lg border border-gray-200 px-4 py-2.5 focus:border-[#8B4513] focus:ring-2 focus:ring-amber-100 focus:outline-none"
                       placeholder="e.g., Hand wash separately, Dry in shade"
                     />
                   </div>
                 </div>
 
-                <div className="flex gap-4">
+                <div className="flex gap-3 pt-4">
                   <button
                     type="submit"
-                    className="flex-1 rounded-2xl bg-[var(--accent)] py-4 font-medium text-white transition-colors hover:bg-[var(--accent-hover)]"
+                    className="flex-1 rounded-lg bg-[#8B4513] py-3 font-semibold text-white transition-colors hover:bg-[#5C2E0B]"
                   >
                     {editingProduct ? 'Update Product' : 'Create Product'}
                   </button>
                   <button
                     type="button"
                     onClick={resetProductForm}
-                    className="flex-1 rounded-2xl border py-4 font-medium transition-colors hover:bg-gray-50"
+                    className="flex-1 rounded-lg border border-gray-300 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50"
                   >
                     Cancel
                   </button>
@@ -806,7 +847,7 @@ export default function AdminProductsPage() {
       {/* Bulk Variant Upload Modal */}
       {showBulkVariantModal && selectedProductId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-black/70 p-4">
-          <div className="relative max-h-[95vh] w-full max-w-4xl overflow-auto rounded-3xl bg-white">
+          <div className="relative max-h-[95vh] w-full max-w-2xl overflow-auto rounded-3xl bg-white shadow-2xl">
             <button
               onClick={() => {
                 setShowBulkVariantModal(false);
@@ -814,43 +855,45 @@ export default function AdminProductsPage() {
                 setBulkVariants([]);
                 setBulkVariantPreviews([]);
               }}
-              className="absolute top-6 right-6 z-10 rounded-full p-2 transition-colors hover:bg-gray-100"
+              className="absolute top-4 right-4 z-10 rounded-full p-2 transition-colors hover:bg-gray-100"
             >
               <X size={24} className="text-gray-500" />
             </button>
 
-            <div className="p-4 md:p-8">
-              <h2 className="mb-4 text-3xl font-bold">Bulk Add Variants</h2>
-              <p className="mb-6 text-gray-600">
-                Upload multiple images at once - each image becomes a separate variant with
-                auto-generated SKU
+            <div className="p-6 md:p-8">
+              <h2 className="mb-2 text-2xl font-bold text-[#5C2E0B]">Bulk Add Variants</h2>
+              <p className="mb-6 text-gray-500">
+                Upload multiple images - each image becomes a separate variant with auto-generated
+                SKU
               </p>
 
               <form onSubmit={handleBulkVariantSubmit} className="space-y-6">
                 <div>
-                  <label className="mb-3 block text-sm font-medium">Select Images * (Max 50)</label>
-                  <div className="rounded-2xl border-2 border-dashed border-gray-300 p-8 text-center">
+                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                    Select Images (Max 50)
+                  </label>
+                  <div className="rounded-xl border-2 border-dashed border-gray-300 p-6 text-center">
                     {bulkVariantPreviews.length > 0 ? (
-                      <div className="grid max-h-96 grid-cols-4 gap-4 overflow-auto">
+                      <div className="grid max-h-80 grid-cols-3 gap-3 overflow-auto md:grid-cols-4">
                         {bulkVariantPreviews.map((preview, index) => (
                           <div key={index} className="group relative">
-                            <div className="relative aspect-square overflow-hidden rounded-lg border">
+                            <div className="relative aspect-square overflow-hidden rounded-lg border bg-amber-50">
                               <Image
                                 src={preview}
                                 alt={`Preview ${index + 1}`}
                                 fill
-                                sizes="(max-width: 768px) 25vw, 200px"
+                                sizes="(max-width: 768px) 33vw, 200px"
                                 className="object-cover"
                               />
                             </div>
                             <button
                               type="button"
                               onClick={() => removeBulkVariantImage(index)}
-                              className="absolute top-1 right-1 rounded-full bg-red-500 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                              className="absolute -top-1 -right-1 rounded-full bg-red-500 p-1 text-white shadow-md transition-opacity hover:bg-red-600"
                             >
                               <X size={14} />
                             </button>
-                            <p className="mt-1 text-center text-xs">
+                            <p className="mt-1 truncate text-center text-xs text-gray-500">
                               {bulkVariantForm.colorPrefix
                                 ? `${bulkVariantForm.colorPrefix} ${index + 1}`
                                 : `Variant ${index + 1}`}
@@ -869,10 +912,10 @@ export default function AdminProductsPage() {
                         </label>
                       </div>
                     ) : (
-                      <label className="block cursor-pointer">
-                        <Upload size={50} className="mx-auto mb-3 text-gray-400" />
+                      <label className="block cursor-pointer py-4">
+                        <Upload size={40} className="mx-auto mb-2 text-gray-400" />
                         <span className="text-gray-600">Click to select multiple images</span>
-                        <p className="mt-2 text-xs text-gray-500">
+                        <p className="mt-1 text-xs text-gray-400">
                           Max 50 images • 5MB each • PNG, JPG, JPEG
                         </p>
                         <input
@@ -885,40 +928,40 @@ export default function AdminProductsPage() {
                       </label>
                     )}
                     {uploadError && (
-                      <div className="mt-3 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3">
-                        <AlertCircle size={18} className="text-red-600" />
+                      <div className="mt-3 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-2">
+                        <AlertCircle size={16} className="text-red-500" />
                         <p className="text-sm text-red-600">{uploadError}</p>
                       </div>
                     )}
                   </div>
                   {bulkVariants.length > 0 && (
-                    <p className="mt-2 text-sm text-gray-600">
+                    <p className="mt-2 text-sm text-gray-500">
                       {bulkVariants.length} image(s) selected
                     </p>
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="mb-2 block text-sm font-medium">Color/Pattern Prefix *</label>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                      Color/Pattern Prefix
+                    </label>
                     <input
                       type="text"
                       value={bulkVariantForm.colorPrefix}
                       onChange={e =>
                         setBulkVariantForm({ ...bulkVariantForm, colorPrefix: e.target.value })
                       }
-                      className="w-full rounded-xl border px-4 py-3"
-                      placeholder="e.g., Red, Blue, Floral, Striped"
+                      className="w-full rounded-lg border border-gray-200 px-4 py-2.5 focus:border-[#8B4513] focus:ring-2 focus:ring-amber-100 focus:outline-none"
+                      placeholder="e.g., Red, Blue, Floral"
                       required
                     />
-                    <p className="mt-1 text-xs text-gray-500">
-                      Will be combined with numbers: "{bulkVariantForm.colorPrefix || 'Color'} 01",
-                      etc.
-                    </p>
                   </div>
 
                   <div>
-                    <label className="mb-2 block text-sm font-medium">Default Stock Quantity</label>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                      Default Stock
+                    </label>
                     <input
                       type="number"
                       value={bulkVariantForm.defaultStock}
@@ -928,13 +971,15 @@ export default function AdminProductsPage() {
                           defaultStock: Number(e.target.value),
                         })
                       }
-                      className="w-full rounded-xl border px-4 py-3"
+                      className="w-full rounded-lg border border-gray-200 px-4 py-2.5 focus:border-[#8B4513] focus:ring-2 focus:ring-amber-100 focus:outline-none"
                       min="0"
                     />
                   </div>
 
                   <div>
-                    <label className="mb-2 block text-sm font-medium">Starting Serial Number</label>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                      Starting Serial
+                    </label>
                     <input
                       type="number"
                       value={bulkVariantForm.startSerial}
@@ -944,29 +989,25 @@ export default function AdminProductsPage() {
                           startSerial: Number(e.target.value),
                         })
                       }
-                      className="w-full rounded-xl border px-4 py-3"
+                      className="w-full rounded-lg border border-gray-200 px-4 py-2.5 focus:border-[#8B4513] focus:ring-2 focus:ring-amber-100 focus:outline-none"
                       min="1"
                     />
-                    <p className="mt-1 text-xs text-gray-500">
-                      Current variants:{' '}
-                      {products.find(p => p.id === selectedProductId)?.variants.length || 0}
-                    </p>
                   </div>
                 </div>
 
                 {bulkVariantUploading && (
-                  <div className="rounded-xl bg-blue-50 p-4">
+                  <div className="rounded-xl bg-amber-50 p-4">
                     <div className="mb-2 flex items-center justify-between">
-                      <span className="text-sm font-medium text-blue-900">
+                      <span className="text-sm font-medium text-amber-800">
                         Creating variants...
                       </span>
-                      <span className="text-sm text-blue-700">
+                      <span className="text-sm text-amber-600">
                         {bulkVariantProgress.current} of {bulkVariantProgress.total}
                       </span>
                     </div>
-                    <div className="h-2 w-full rounded-full bg-blue-200">
+                    <div className="h-2 w-full rounded-full bg-amber-200">
                       <div
-                        className="h-2 rounded-full bg-blue-600 transition-all duration-300"
+                        className="h-2 rounded-full bg-amber-600 transition-all duration-300"
                         style={{
                           width: `${(bulkVariantProgress.current / bulkVariantProgress.total) * 100}%`,
                         }}
@@ -975,14 +1016,14 @@ export default function AdminProductsPage() {
                   </div>
                 )}
 
-                <div className="flex gap-4">
+                <div className="flex gap-3">
                   <button
                     type="submit"
-                    className="flex-1 rounded-2xl bg-blue-600 py-4 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                    className="flex-1 rounded-lg bg-[#8B4513] py-3 font-semibold text-white transition-colors hover:bg-[#5C2E0B] disabled:opacity-50"
                     disabled={bulkVariantUploading || bulkVariants.length === 0}
                   >
                     {bulkVariantUploading
-                      ? 'Creating Variants...'
+                      ? 'Creating...'
                       : `Create ${bulkVariants.length} Variant${bulkVariants.length !== 1 ? 's' : ''}`}
                   </button>
                   <button
@@ -993,7 +1034,7 @@ export default function AdminProductsPage() {
                       setBulkVariants([]);
                       setBulkVariantPreviews([]);
                     }}
-                    className="flex-1 rounded-2xl border py-4 font-medium hover:bg-gray-50"
+                    className="flex-1 rounded-lg border border-gray-300 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50"
                   >
                     Cancel
                   </button>
@@ -1007,50 +1048,52 @@ export default function AdminProductsPage() {
       {/* Single Variant Modal */}
       {showVariantModal && selectedProductId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="relative max-h-[90vh] w-full max-w-md overflow-auto rounded-3xl bg-white">
+          <div className="relative w-full max-w-md overflow-auto rounded-3xl bg-white shadow-2xl">
             <button
               onClick={resetVariantForm}
-              className="absolute top-6 right-6 z-10 rounded-full p-2 transition-colors hover:bg-gray-100"
+              className="absolute top-4 right-4 z-10 rounded-full p-2 transition-colors hover:bg-gray-100"
             >
               <X size={24} className="text-gray-500" />
             </button>
 
-            <div className="p-4 md:p-8">
-              <h2 className="mb-6 text-2xl font-bold">
+            <div className="p-6 md:p-8">
+              <h2 className="mb-2 text-2xl font-bold text-[#5C2E0B]">
                 {editingVariant ? 'Edit Variant' : 'Add New Variant'}
               </h2>
-              <p className="mb-6 text-sm text-gray-600">
+              <p className="mb-6 text-gray-500">
                 {editingVariant
                   ? 'Update variant information'
                   : 'Add a new color option for this product'}
               </p>
 
-              <form onSubmit={handleVariantSubmit} className="space-y-6">
+              <form onSubmit={handleVariantSubmit} className="space-y-5">
                 <div>
-                  <label className="mb-3 block text-sm font-medium">Variant Image *</label>
-                  <div className="rounded-2xl border-2 border-dashed border-gray-300 p-6 text-center">
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Variant Image
+                  </label>
+                  <div className="rounded-xl border-2 border-dashed border-gray-300 p-4 text-center">
                     {variantForm.image ? (
-                      <div className="relative mx-auto h-48 w-48 overflow-hidden rounded-xl">
+                      <div className="relative mx-auto h-32 w-32 overflow-hidden rounded-lg">
                         <Image
                           src={variantForm.image}
                           alt="preview"
                           fill
-                          sizes="200px"
+                          sizes="128px"
                           className="object-cover"
                         />
                         <button
                           type="button"
                           onClick={() => setVariantForm(p => ({ ...p, image: '' }))}
-                          className="absolute top-2 right-2 rounded-full bg-red-500 p-1 text-white transition-colors hover:bg-red-600"
+                          className="absolute -top-1 -right-1 rounded-full bg-red-500 p-1 text-white"
                         >
-                          <X size={18} />
+                          <X size={14} />
                         </button>
                       </div>
                     ) : (
-                      <label className="block cursor-pointer">
-                        <Upload size={40} className="mx-auto mb-2 text-gray-400" />
+                      <label className="block cursor-pointer py-3">
+                        <Upload size={32} className="mx-auto mb-1 text-gray-400" />
                         <span className="text-sm text-gray-600">Click to upload image</span>
-                        <p className="mt-1 text-xs text-gray-500">Max 5MB • PNG, JPG, JPEG</p>
+                        <p className="mt-0.5 text-xs text-gray-400">Max 5MB</p>
                         <input
                           type="file"
                           accept="image/*"
@@ -1059,76 +1102,72 @@ export default function AdminProductsPage() {
                         />
                       </label>
                     )}
-                    {uploading && (
-                      <div className="mt-3 flex items-center justify-center gap-2">
-                        <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-blue-600"></div>
-                        <p className="text-sm text-blue-600">Uploading...</p>
-                      </div>
-                    )}
-                    {uploadError && (
-                      <div className="mt-3 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-2">
-                        <AlertCircle size={16} className="mt-0.5 flex-shrink-0 text-red-600" />
-                        <p className="text-xs text-red-600">{uploadError}</p>
-                      </div>
-                    )}
+                    {uploading && <p className="mt-2 text-sm text-blue-600">Uploading...</p>}
+                    {uploadError && <p className="mt-2 text-sm text-red-600">{uploadError}</p>}
                   </div>
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium">Color Name *</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Color Name <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="text"
                     value={variantForm.color}
                     onChange={e => setVariantForm({ ...variantForm, color: e.target.value })}
-                    className="w-full rounded-xl border px-4 py-3 focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
+                    className="w-full rounded-lg border border-gray-200 px-4 py-2.5 focus:border-[#8B4513] focus:ring-2 focus:ring-amber-100 focus:outline-none"
                     placeholder="e.g., Red, Blue, Green"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium">Color Code (Hex)</label>
-                  <div className="grid grid-cols-2 gap-2 md:flex md:flex-wrap">
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Color Code (Hex)
+                  </label>
+                  <div className="flex gap-2">
                     <input
                       type="color"
                       value={variantForm.colorCode || '#000000'}
                       onChange={e => setVariantForm({ ...variantForm, colorCode: e.target.value })}
-                      className="h-12 w-16 cursor-pointer rounded-lg border"
+                      className="h-10 w-14 cursor-pointer rounded border"
                     />
                     <input
                       type="text"
                       value={variantForm.colorCode}
                       onChange={e => setVariantForm({ ...variantForm, colorCode: e.target.value })}
-                      className="flex-1 rounded-xl border px-4 py-3 focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
+                      className="flex-1 rounded-lg border border-gray-200 px-4 py-2.5 focus:border-[#8B4513] focus:ring-2 focus:ring-amber-100 focus:outline-none"
                       placeholder="#RRGGBB"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium">Stock Quantity</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Stock Quantity
+                  </label>
                   <input
                     type="number"
                     value={variantForm.stock}
                     onChange={e =>
                       setVariantForm({ ...variantForm, stock: Number(e.target.value) })
                     }
-                    className="w-full rounded-xl border px-4 py-3 focus:ring-2 focus:ring-[var(--accent)] focus:outline-none"
+                    className="w-full rounded-lg border border-gray-200 px-4 py-2.5 focus:border-[#8B4513] focus:ring-2 focus:ring-amber-100 focus:outline-none"
                     min="0"
                   />
                 </div>
 
-                <div className="flex gap-4">
+                <div className="flex gap-3 pt-4">
                   <button
                     type="submit"
-                    className="flex-1 rounded-xl bg-green-600 py-3 font-medium text-white transition-colors hover:bg-green-700"
+                    className="flex-1 rounded-lg bg-[#8B4513] py-2.5 font-semibold text-white transition-colors hover:bg-[#5C2E0B]"
                   >
                     {editingVariant ? 'Update Variant' : 'Add Variant'}
                   </button>
                   <button
                     type="button"
                     onClick={resetVariantForm}
-                    className="flex-1 rounded-xl border py-3 font-medium transition-colors hover:bg-gray-50"
+                    className="flex-1 rounded-lg border border-gray-300 py-2.5 font-semibold text-gray-700 transition-colors hover:bg-gray-50"
                   >
                     Cancel
                   </button>

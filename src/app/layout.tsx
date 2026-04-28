@@ -1,49 +1,39 @@
-'use client'; // Add this since we need to use usePathname
-
-import { Inter, Geist } from 'next/font/google';
+import type { Metadata } from 'next';
+import { Inter, Poppins } from 'next/font/google';
 import './globals.css';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import { cn } from '@/lib/utils';
-import { usePathname } from 'next/navigation';
-import { useProductStore } from '@/lib/productStore';
-import { useEffect } from 'react';
+import { CartProvider } from '@/context/CartContext';
+import { AuthProvider } from '@/context/AuthContext';
 
-const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
+const inter = Inter({
+  subsets: ['latin'],
+});
 
-const inter = Inter({ subsets: ['latin'] });
+const poppins = Poppins({
+  weight: ['400', '500', '600', '700'],
+  subsets: ['latin'],
+  variable: '--font-poppins',
+});
 
-// Note: metadata doesn't work in client components
-// If you need metadata, you'll need a separate server layout
-// But for now, we'll keep it as client component
+export const metadata: Metadata = {
+  title: 'HandloomVilla – Pure Handwoven Sarees & Kurtis',
+  description:
+    "Discover authentic handloom sarees, kurtis and more from Sri Lanka's finest artisans.",
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const loadProducts = useProductStore(state => state.loadProducts);
-
-  useEffect(() => {
-    loadProducts(); // Load from database on app start
-  }, []);
-
-  const pathname = usePathname();
-
-  // Check if current route is admin or login
-  const isAdminRoute = pathname?.startsWith('/admin') || pathname?.startsWith('/login');
-
   return (
-    <html lang="en" className={cn('font-sans', geist.variable)}>
+    <html lang="en" suppressHydrationWarning>
       <body
+        className={`${inter.className} ${poppins.variable} antialiased`}
         suppressHydrationWarning
-        className={`${inter.className} bg-[var(--background)] text-[var(--foreground)] antialiased`}
       >
-        {!isAdminRoute && <Header />}
-        <main className={!isAdminRoute ? 'min-h-[calc(100vh-4rem)]' : 'min-h-screen'}>
-          {children}
-        </main>
-        {!isAdminRoute && <Footer />}
+        <AuthProvider>
+          <CartProvider>{children}</CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

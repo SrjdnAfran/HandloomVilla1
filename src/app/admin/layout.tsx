@@ -1,156 +1,181 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, Tags, ShoppingBag, LogOut, Menu, X } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  Users,
+  Settings,
+  LogOut,
+  Shield,
+  Menu,
+  X,
+} from 'lucide-react';
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+const navItems = [
+  { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+  { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
+  { name: 'Products', href: '/admin/products', icon: Package },
+  { name: 'Categories', href: '/admin/categories', icon: Package },
+  { name: 'Customers', href: '/admin/customers', icon: Users },
+  { name: 'Settings', href: '/admin/settings', icon: Settings },
+];
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const pathname = usePathname();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Check if user is logged in
   useEffect(() => {
-    const password = localStorage.getItem("adminPassword");
-    if (password === "handloom123") {
-      setIsAuthenticated(true);
-    }
+    // Check if mobile
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth >= 768) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const login = (e: React.FormEvent) => {
-    e.preventDefault();
-    const input = (e.target as HTMLFormElement).password.value;
-    if (input === "handloom123") {
-      localStorage.setItem("adminPassword", input);
-      setIsAuthenticated(true);
-    } else {
-      alert("Wrong password!");
-    }
+  useEffect(() => {
+    // Check authentication status
+    fetch('/api/admin/me')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.authenticated) {
+          router.replace('/admin-login');
+        } else {
+          setIsAuthenticated(true);
+        }
+      })
+      .catch(() => {
+        router.replace('/admin-login');
+      });
+  }, [router]);
+
+  const handleLogout = async () => {
+    await fetch('/api/admin/logout', { method: 'POST' });
+    window.location.href = '/admin-login';
   };
 
-  const logout = () => {
-    localStorage.removeItem("adminPassword");
-    window.location.reload();
-  };
-
-  const menuItems = [
-    { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/admin/products", label: "Products", icon: Package },
-    { href: "/admin/categories", label: "Categories", icon: Tags },
-    { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
-  ];
-
-  // Login Screen
-  if (!isAuthenticated) {
+  if (isAuthenticated === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="bg-white p-10 rounded-2xl shadow-xl max-w-md w-full">
-          <h1 className="text-3xl font-serif text-center mb-8 text-[#274a9c]">
-            HandloomVilla Admin
-          </h1>
-          <form onSubmit={login}>
-            <input
-              type="password"
-              name="password"
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-[#274a9c]"
-              placeholder="Enter admin password"
-              required
-            />
-            <button
-              type="submit"
-              className="w-full mt-6 bg-[#274a9c] text-white py-4 rounded-lg font-medium hover:bg-[#1e3a7a]"
-            >
-              Login
-            </button>
-          </form>
+      <div className="flex min-h-screen items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-[#8B4513] border-t-transparent" />
+          <p className="text-gray-600">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block w-72 bg-[#0f2a5e] text-white flex-shrink-0 border-r border-gray-800">
-        <div className="p-8 border-b border-gray-700">
-          <h1 className="text-3xl font-serif font-bold">HandloomVilla</h1>
-          <p className="text-gray-400 text-sm mt-1">Admin Panel</p>
-        </div>
-
-        <nav className="p-6">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const active = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 px-5 py-3.5 rounded-xl mb-1 transition-all ${
-                  active ? "bg-[#274a9c]" : "hover:bg-[#1e3a7a]"
-                }`}
-              >
-                <Icon size={22} />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="absolute bottom-8 px-6 w-72">
-          <button
-            onClick={logout}
-            className="flex items-center gap-3 text-red-400 hover:text-red-500 w-full px-5 py-3 rounded-xl hover:bg-red-950/30"
-          >
-            <LogOut size={22} />
-            Logout
-          </button>
-        </div>
+    <div className="min-h-screen bg-gray-100">
+      {/* Mobile Menu Button */}
+      <div className="fixed top-4 left-4 z-50 md:hidden">
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="rounded-lg bg-[#8B4513] p-2 text-white shadow-lg"
+        >
+          {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </button>
       </div>
 
-      {/* Main Area */}
-      <div className="flex-1">
-        {/* Mobile Top Bar */}
-        <div className="md:hidden bg-white border-b px-6 py-4 flex justify-between items-center sticky top-0 z-50">
-          <h1 className="text-2xl font-serif font-bold text-[#274a9c]">HandloomVilla</h1>
-          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-            {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
-        </div>
-
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden fixed inset-0 bg-black/70 z-50">
-            <div className="bg-white h-full w-72 p-6">
-              <nav className="space-y-2">
-                {menuItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center gap-3 p-4 rounded-xl hover:bg-gray-100"
-                  >
-                    <item.icon size={24} />
-                    {item.label}
-                  </Link>
-                ))}
-              </nav>
-              <button onClick={logout} className="mt-10 text-red-600 flex items-center gap-3 p-4">
-                <LogOut size={24} /> Logout
-              </button>
+      {/* Sidebar - Desktop */}
+      <aside
+        className={`fixed top-0 left-0 z-40 h-screen w-64 bg-white shadow-lg transition-transform duration-300 md:translate-x-0 ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="flex h-full flex-col">
+          {/* Logo Area */}
+          <div className="border-b border-gray-200 p-5">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-[#5C2E0B] to-[#8B4513]">
+                <span className="text-sm font-bold text-white">H</span>
+              </div>
+              <div>
+                <h2 className="font-serif text-lg font-bold text-[#5C2E0B]">HandloomVilla</h2>
+                <p className="text-xs text-gray-400">Admin Panel</p>
+              </div>
             </div>
           </div>
-        )}
 
-        {/* Content Area - NO Header & Footer */}
-        <main className="p-4 md:p-8 min-h-screen">
-          {children}
-        </main>
-      </div>
+          {/* Navigation */}
+          <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-6">
+            {navItems.map(item => {
+              const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-all ${
+                    isActive
+                      ? 'bg-amber-50 font-semibold text-[#8B4513]'
+                      : 'text-gray-600 hover:bg-amber-50 hover:text-[#8B4513]'
+                  }`}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Footer */}
+          <div className="border-t border-gray-200 p-4">
+            <button
+              onClick={handleLogout}
+              className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-gray-600 transition-all hover:bg-red-50 hover:text-red-600"
+            >
+              <LogOut className="h-5 w-5" />
+              <span>Logout</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/50 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Main Content */}
+      <main className="min-h-screen md:ml-64">
+        {/* Top Bar */}
+        <div className="sticky top-0 z-20 bg-white shadow-sm">
+          <div className="flex items-center justify-between px-4 py-3 md:px-8">
+            <div className="hidden md:flex md:items-center md:gap-2">
+              <Shield className="h-5 w-5 text-[#8B4513]" />
+              <span className="text-sm text-gray-500">Welcome back, Admin</span>
+            </div>
+            <div className="flex w-full items-center justify-between md:w-auto md:justify-end">
+              <div className="md:hidden">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-[#8B4513]" />
+                  <span className="text-sm text-gray-500">Admin</span>
+                </div>
+              </div>
+              <span className="text-xs text-gray-400">{new Date().toLocaleDateString()}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Page Content */}
+        <div className="p-4 md:p-6">{children}</div>
+      </main>
     </div>
   );
 }

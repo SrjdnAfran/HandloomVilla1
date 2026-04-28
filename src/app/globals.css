@@ -1,20 +1,33 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-:root {
-  --background: #fdfaf5; /* warm cream background */
-  --foreground: #1a1a1a;
-  --accent: #274a9c; /* ← Your new logo color (Deep Blue) */
-  --accent-hover: #1e3a7a; /* darker shade for hover */
-  --text-muted: #6b7280;
+@theme {
+  /* Change from green to handloom/earthy colors */
+  --color-primary: #8b4513; /* SaddleBrown - earthy tone */
+  --color-primary-dark: #5c2e0b; /* Darker brown */
+  --color-primary-light: #d2691e; /* Chocolate */
+  --color-secondary: #d2b48c; /* Tan - warm neutral */
+  --color-accent: #cd853f; /* Peru - accent color */
+  --color-gold: #daa520; /* Goldenrod for highlights */
+  --color-cream: #fff8f0; /* Warm cream background */
 }
 
-body {
-  background-color: var(--background);
-  color: var(--foreground);
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-(--color-cream) text-gray-800;
+  }
 }
 
-/* Optional: Make links and buttons use accent color 
-a:hover {
-  color: var(--accent);
+@layer components {
+  .container {
+    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Handloom texture overlay */
+  .handloom-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%238B4513' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
 }
-*/
