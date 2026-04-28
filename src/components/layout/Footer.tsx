@@ -1,7 +1,21 @@
+'use client';
+
 import Link from 'next/link';
 import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin, Heart } from 'lucide-react';
 
-const footerLinks = {
+// Define types for footer links
+type FooterLink = {
+  name: string;
+  href: string;
+};
+
+type FooterLinks = {
+  Shop: FooterLink[];
+  Support: FooterLink[];
+  Company: FooterLink[];
+};
+
+const footerLinks: FooterLinks = {
   Shop: [
     { name: 'Silk Sarees', href: '/shop?category=silk-sarees' },
     { name: 'Cotton Kurtis', href: '/shop?category=cotton-kurtis' },
@@ -11,11 +25,10 @@ const footerLinks = {
   ],
   Support: [
     { name: 'Contact Us', href: '/contact' },
-    { name: 'Shipping Info', href: '/shipping' }, // ← Add
-    { name: 'Returns', href: '/returns' }, // ← Add
-    { name: 'Privacy Policy', href: '/privacy' }, // ← Add
-    { name: 'Terms of Service', href: '/terms' },
-    ,
+    { name: 'FAQs', href: '/faq' },
+    { name: 'Shipping Info', href: '/shipping' },
+    { name: 'Returns', href: '/returns' },
+    { name: 'Size Guide', href: '/size-guide' },
   ],
   Company: [
     { name: 'About Us', href: '/about' },
@@ -72,7 +85,7 @@ export default function Footer() {
           <div>
             <h3 className="mb-4 text-lg font-semibold text-white">Shop</h3>
             <ul className="space-y-2">
-              {footerLinks.Shop.map(link => (
+              {footerLinks.Shop.map((link: FooterLink) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}
@@ -89,7 +102,7 @@ export default function Footer() {
           <div>
             <h3 className="mb-4 text-lg font-semibold text-white">Support</h3>
             <ul className="space-y-2">
-              {footerLinks.Support.map(link => (
+              {footerLinks.Support.map((link: FooterLink) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}
@@ -106,7 +119,7 @@ export default function Footer() {
           <div>
             <h3 className="mb-4 text-lg font-semibold text-white">Company</h3>
             <ul className="space-y-2">
-              {footerLinks.Company.map(link => (
+              {footerLinks.Company.map((link: FooterLink) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}
