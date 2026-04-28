@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -16,10 +16,14 @@ import {
   Clock,
   Truck,
   PackageCheck,
+  Eye,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
-const statusIcons = {
+// Define order status type
+type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+
+const statusIcons: Record<OrderStatus, React.ReactNode> = {
   pending: <Clock className="h-5 w-5 text-yellow-500" />,
   processing: <Package className="h-5 w-5 text-blue-500" />,
   shipped: <Truck className="h-5 w-5 text-purple-500" />,
@@ -27,7 +31,7 @@ const statusIcons = {
   cancelled: <PackageCheck className="h-5 w-5 text-red-500" />,
 };
 
-const statusColors = {
+const statusColors: Record<OrderStatus, string> = {
   pending: 'bg-yellow-100 text-yellow-700',
   processing: 'bg-blue-100 text-blue-700',
   shipped: 'bg-purple-100 text-purple-700',
@@ -35,7 +39,94 @@ const statusColors = {
   cancelled: 'bg-red-100 text-red-700',
 };
 
-function OrderCard({ order }: { order: any }) {
+// Define types for order and item
+type OrderItem = {
+  id: number;
+  name: string;
+  quantity: number;
+  price: number;
+  image: string;
+};
+
+type Order = {
+  id: string;
+  orderNumber: string;
+  date: Date;
+  status: OrderStatus;
+  total: number;
+  items: OrderItem[];
+  shippingAddress: {
+    fullName: string;
+    address: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+  };
+};
+
+// Sample orders data (in real app, fetch from API)
+const sampleOrders: Order[] = [
+  {
+    id: '1',
+    orderNumber: 'HL20240427001',
+    date: new Date('2024-04-27'),
+    status: 'delivered',
+    total: 89.99,
+    items: [
+      {
+        id: 1,
+        name: 'Banarasi Silk Saree',
+        quantity: 1,
+        price: 89.99,
+        image: '/images/products/banarasi-silk.jpg',
+      },
+    ],
+    shippingAddress: {
+      fullName: 'John Doe',
+      address: '123 Main St',
+      city: 'Colombo',
+      state: 'Western',
+      postalCode: '00100',
+      country: 'Sri Lanka',
+    },
+  },
+  {
+    id: '2',
+    orderNumber: 'HL20240420002',
+    date: new Date('2024-04-20'),
+    status: 'shipped',
+    total: 135.98,
+    items: [
+      {
+        id: 2,
+        name: 'Handloom Cotton Kurta',
+        quantity: 2,
+        price: 45.99,
+        image: '/images/products/cotton-kurta.jpg',
+      },
+      {
+        id: 3,
+        name: 'Chanderi Dupatta',
+        quantity: 1,
+        price: 35.99,
+        image: '/images/products/chanderi-dupatta.jpg',
+      },
+    ],
+    shippingAddress: {
+      fullName: 'John Doe',
+      address: '123 Main St',
+      city: 'Colombo',
+      state: 'Western',
+      postalCode: '00100',
+      country: 'Sri Lanka',
+    },
+  },
+];
+
+function OrderCard({ order }: { order: Order }) {
+  const status = order.status as OrderStatus;
+
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-5 transition-all hover:shadow-md">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
@@ -43,10 +134,10 @@ function OrderCard({ order }: { order: any }) {
           <div className="flex flex-wrap items-center gap-3">
             <p className="text-sm text-gray-500">Order #{order.orderNumber}</p>
             <span
-              className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[order.status]}`}
+              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[status]}`}
             >
-              {statusIcons[order.status]}
-              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+              {statusIcons[status]}
+              {status.charAt(0).toUpperCase() + status.slice(1)}
             </span>
           </div>
           <p className="mt-1 text-xs text-gray-400">Placed on {order.date.toLocaleDateString()}</p>
@@ -61,7 +152,7 @@ function OrderCard({ order }: { order: any }) {
       </div>
 
       <div className="space-y-2">
-        {order.items.slice(0, 2).map((item: any, idx: number) => (
+        {order.items.slice(0, 2).map((item, idx) => (
           <div key={idx} className="flex justify-between text-sm">
             <span className="text-gray-600">
               {item.name} x {item.quantity}
@@ -86,13 +177,20 @@ export default function AccountPage() {
   const router = useRouter();
   const { user, logout, getOrders } = useAuth();
   const [activeTab, setActiveTab] = useState('orders');
+  const [orders, setOrders] = useState<Order[]>([]);
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/login');
+    } else {
+      // In production, fetch orders from API
+      setOrders(sampleOrders);
+    }
+  }, [user, router]);
 
   if (!user) {
-    router.push('/login');
     return null;
   }
-
-  const orders = getOrders();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
