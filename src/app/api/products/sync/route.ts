@@ -1,4 +1,4 @@
-// app/api/products/sync/route.ts
+
 import { NextResponse } from 'next/server';
 import { neon } from '@neondatabase/serverless';
 
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
         RETURNING id
       `;
       
-      const productId = result.rows[0].id;
+     const productId = result[0].id; 
       
       // Insert variants
       for (const variant of product.variants) {
