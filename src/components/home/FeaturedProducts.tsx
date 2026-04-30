@@ -4,54 +4,55 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Star, ShoppingCart, Eye, Heart } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
-import LazyImage from '@/components/ui/LazyImage';
+import Image from 'next/image';
 
 const products = [
   {
     id: 1,
-    name: 'Banarasi Silk Saree',
-    price: 89.99,
-    originalPrice: 149.99,
-    rating: 4.8,
-    reviewCount: 156,
-    image: '/images/products/banarasi-silk.jpg',
+    name: 'Premium Silk Saree',
+    price: 8500,
+    originalPrice: 9500,
+    rating: 4.9,
+    reviewCount: 184,
+    image: '/images/products/premium-silk-saree.jpg',
     category: 'Silk Sarees',
     inStock: true,
     isNew: false,
   },
   {
     id: 2,
-    name: 'Handloom Cotton Kurta',
-    price: 45.99,
-    originalPrice: null,
-    rating: 4.9,
-    reviewCount: 89,
-    image: '/images/products/cotton-kurta.jpg',
-    category: 'Cotton Kurtis',
+    name: 'Elegant Cotton Saree',
+    price: 6000,
+    originalPrice: 6500,
+    rating: 4.8,
+    reviewCount: 142,
+    image: '/images/products/cotton-saree.jpg',
+    category: 'Cotton Sarees',
     inStock: true,
     isNew: true,
   },
   {
     id: 3,
-    name: 'Chanderi Dupatta',
-    price: 35.99,
-    originalPrice: 59.99,
-    rating: 4.7,
-    reviewCount: 67,
-    image: '/images/products/chanderi-dupatta.jpg',
-    category: 'Dupattas',
+    name: 'Designer Embroidery Saree',
+    price: 7600,
+    originalPrice: 8500,
+    rating: 4.9,
+    reviewCount: 96,
+    image: '/images/products/embroidery-saree.jpg',
+    category: 'Embroidery Sarees',
     inStock: true,
-    isNew: false,
+    isNew: true,
   },
+
   {
-    id: 4,
-    name: "Traditional Men's Kurta",
-    price: 65.99,
-    originalPrice: null,
+    id: 8,
+    name: 'Embroidered Premium Sarong',
+    price: 3000,
+    originalPrice: 3500,
     rating: 4.8,
-    reviewCount: 112,
-    image: '/images/products/mens-kurta.jpg',
-    category: "Men's Collection",
+    reviewCount: 69,
+    image: '/images/products/embroidery-sarong.jpg',
+    category: 'Embroidery Sarongs',
     inStock: true,
     isNew: false,
   },
@@ -126,14 +127,13 @@ function ProductCard({ product }: { product: (typeof products)[0] }) {
 
       {/* Image Container */}
       <div className="relative h-56 overflow-hidden bg-linear-to-br from-amber-100 to-amber-50">
-        <LazyImage
+        <Image
           src={product.image}
           alt={product.name}
           fill
           className={`object-cover transition-transform duration-500 ${
             isHovered ? 'scale-110' : 'scale-100'
           }`}
-          lowQualitySrc="/images/placeholder-low.jpg"
         />
 
         {/* Quick Action Buttons - Visible on hover */}
@@ -175,9 +175,9 @@ function ProductCard({ product }: { product: (typeof products)[0] }) {
         </Link>
 
         <div className="mb-3 flex items-center gap-2">
-          <span className="text-lg font-bold text-[#8B4513] sm:text-xl">${product.price}</span>
+          <span className="text-lg font-bold text-[#8B4513] sm:text-xl">LKR{product.price}</span>
           {product.originalPrice && (
-            <span className="text-xs text-gray-400 line-through">${product.originalPrice}</span>
+            <span className="text-xs text-gray-400 line-through">LKR{product.originalPrice}</span>
           )}
         </div>
 

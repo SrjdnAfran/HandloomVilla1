@@ -1,6 +1,8 @@
 // app/api/products/sync/route.ts
-import { sql } from '@vercel/postgres';
 import { NextResponse } from 'next/server';
+import { neon } from '@neondatabase/serverless';
+
+const sql = neon(process.env.POSTGRES_URL!);
 
 export async function POST(request: Request) {
   try {

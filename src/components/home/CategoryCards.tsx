@@ -6,32 +6,46 @@ import { ArrowRight } from 'lucide-react';
 
 const categories = [
   {
-    title: 'Silk Sarees',
-    description: 'Luxurious pure silk sarees with traditional zari work',
-    href: '/shop?category=silk-sarees',
-    image: '/images/categories/silk-saree.jpg',
+    title: 'Cotton Sarees',
+    description: 'Soft, breathable cotton sarees crafted for everyday elegance and comfort',
+    href: '/shop',
+    image: '/images/categories/cotton-saree.jpg',
     color: 'from-rose-500 to-rose-600',
   },
   {
-    title: 'Cotton Kurtis',
-    description: 'Comfortable handloom cotton kurtis for everyday elegance',
-    href: '/shop?category=cotton-kurtis',
-    image: '/images/categories/cotton-kurti.jpg',
-    color: 'from-blue-500 to-blue-600',
+    title: 'Silk Sarees',
+    description: 'Elegant silk sarees with a luxurious finish for special occasions',
+    href: '/shop',
+    image: '/images/categories/silk-saree.jpg',
+    color: 'from-purple-500 to-purple-600',
   },
   {
-    title: 'Dupattas',
-    description: 'Handwoven dupattas to complement any outfit',
-    href: '/shop?category=dupattas',
-    image: '/images/categories/dupatta.jpg',
+    title: 'Embroidery Sarees',
+    description: 'Beautifully embroidered sarees showcasing timeless craftsmanship',
+    href: '/shop',
+    image: '/images/categories/embroidery-saree.jpg',
     color: 'from-emerald-500 to-emerald-600',
   },
   {
     title: "Men's Collection",
-    description: 'Traditional handloom shirts and kurtas for men',
-    href: '/shop?category=mens',
-    image: '/images/categories/mens-kurta.jpg',
+    description: 'Premium handloom sarongs in cotton, silk, and embroidered designs',
+    href: '/shop',
+    image: '/images/categories/mens-sarong.jpg',
     color: 'from-amber-500 to-amber-600',
+    subcategories: [
+      {
+        title: 'Cotton Sarongs',
+        href: '/shop',
+      },
+      {
+        title: 'Silk Sarongs',
+        href: '/shop',
+      },
+      {
+        title: 'Embroidery Sarongs',
+        href: '/shop',
+      },
+    ],
   },
 ];
 
@@ -50,13 +64,16 @@ export default function CategoryCards() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {categories.map((category, index) => (
+          {categories.map(category => (
             <Link key={category.title} href={category.href}>
               <div className="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-500 hover:shadow-2xl">
-                <div className="relative h-64 bg-linear-to-br from-gray-100 to-gray-200">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-lg text-gray-300">Image</span>
-                  </div>
+                <div className="relative h-64">
+                  <Image
+                    src={category.image}
+                    alt={category.title}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
                   <div className="absolute inset-0 bg-linear-to-t from-black/70 via-transparent to-transparent" />
                 </div>
                 <div className="absolute right-0 bottom-0 left-0 p-6 text-white">

@@ -13,7 +13,7 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative flex min-h-[90vh] items-center overflow-hidden bg-linear-to-br from-[#FFF8F0] via-white to-[#FFF0E0]">
+    <section className="relative flex min-h-[80vh] items-center overflow-hidden bg-linear-to-br from-[#FFF8F0] via-white to-[#FFF0E0]">
       {/* Background Pattern */}
       <div className="handloom-pattern absolute inset-0 opacity-30" />
 

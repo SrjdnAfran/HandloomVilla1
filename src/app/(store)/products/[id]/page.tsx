@@ -15,10 +15,7 @@ import {
   RefreshCw,
   Minus,
   Plus,
-  ChevronLeft,
-  ChevronRight,
   Award,
-  Clock,
   MessageCircle,
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
@@ -54,116 +51,31 @@ type Product = {
   }[];
 };
 
-// Sample Product Data - Replace with your actual API call
-const getProductById = (id: number): Product | undefined => {
-  const products: Record<number, Product> = {
-    1: {
-      id: 1,
-      name: 'Banarasi Silk Saree',
-      price: 89.99,
-      originalPrice: 149.99,
-      rating: 4.8,
-      reviewCount: 156,
-      image: '/images/products/banarasi-silk.jpg',
-      images: [
-        '/images/products/banarasi-silk.jpg',
-        '/images/products/banarasi-silk-2.jpg',
-        '/images/products/banarasi-silk-3.jpg',
-      ],
-      category: 'Silk Sarees',
-      subCategory: 'Wedding Collection',
-      inStock: true,
-      isNew: false,
-      isBestseller: true,
-      description:
-        'Handcrafted pure silk saree with intricate zari work, perfect for weddings and special occasions.',
-      longDescription:
-        'Our Banarasi Silk Saree is a masterpiece of traditional Indian craftsmanship. Woven by skilled artisans in Varanasi, this saree features intricate gold zari work on the finest pure silk fabric. The rich texture and vibrant colors make it perfect for weddings, festivals, and other special occasions. Each saree takes weeks to complete, with every motif hand-woven to perfection.',
-      features: [
-        '100% pure Banarasi silk',
-        'Handwoven by master artisans',
-        'Intricate gold zari work',
-        'Comes with matching blouse piece',
-        'Dry clean only for longevity',
-      ],
-      specifications: [
-        { label: 'Fabric', value: 'Pure Banarasi Silk' },
-        { label: 'Length', value: '5.5 meters' },
-        { label: 'Width', value: '1.15 meters' },
-        { label: 'Blouse Length', value: '0.8 meters' },
-        { label: 'Weight', value: '750 grams' },
-        { label: 'Origin', value: 'Varanasi, India' },
-      ],
-      careInstructions: [
-        'Dry clean only',
-        'Store in a cotton bag',
-        'Avoid direct sunlight',
-        'Keep away from perfumes and deodorants',
-      ],
-      reviews: [
-        {
-          id: 1,
-          author: 'Priya Sharma',
-          rating: 5,
-          date: 'March 15, 2024',
-          title: 'Absolutely stunning!',
-          content:
-            'The saree is even more beautiful in person. The silk quality is exceptional and the zari work is intricate. Worth every penny!',
-          verified: true,
-        },
-        {
-          id: 2,
-          author: 'Meera Patel',
-          rating: 4.5,
-          date: 'March 10, 2024',
-          title: 'Beautiful craftsmanship',
-          content:
-            'Loved the saree! The color is vibrant and the fabric feels luxurious. Shipping was fast too.',
-          verified: true,
-        },
-      ],
-    },
-    // Add more products as needed
+// Mapping function: DB shape → Frontend shape
+const mapDbProductToFrontend = (dbProduct: any): Product => {
+  const mainImage = dbProduct.variants?.[0]?.image || '/images/placeholder.jpg';
+
+  return {
+    id: dbProduct.id,
+    name: dbProduct.name,
+    price: dbProduct.base_price,
+    originalPrice: dbProduct.original_price || null,
+    rating: 4.8, // You can enhance this later with real reviews
+    reviewCount: dbProduct.review_count || 0,
+    image: mainImage,
+    images: dbProduct.variants?.map((v: any) => v.image).filter(Boolean) || [mainImage],
+    category: dbProduct.category,
+    subCategory: dbProduct.sub_category,
+    inStock: dbProduct.variants?.some((v: any) => v.stock > 0) || false,
+    isNew: dbProduct.is_new || false,
+    isBestseller: dbProduct.is_featured || false,
+    description: dbProduct.description || '',
+    longDescription: dbProduct.long_description || dbProduct.description || '',
+    features: dbProduct.features ? JSON.parse(dbProduct.features) : [],
+    specifications: dbProduct.specifications ? JSON.parse(dbProduct.specifications) : [],
+    careInstructions: dbProduct.care_instructions ? JSON.parse(dbProduct.care_instructions) : [],
+    reviews: [], // You can join reviews later if needed
   };
-
-  return products[id];
-};
-
-// Get related products (same category, different ID)
-const getRelatedProducts = (currentProduct: Product): Product[] => {
-  // This should fetch from your actual data source
-  const related = [
-    {
-      id: 2,
-      name: 'Kanchipuram Silk Saree',
-      price: 129.99,
-      originalPrice: 199.99,
-      rating: 4.9,
-      reviewCount: 203,
-      image: '/images/products/kanchipuram-silk.jpg',
-      category: 'Silk Sarees',
-      inStock: true,
-      isNew: false,
-      isBestseller: true,
-      description: 'Authentic Kanchipuram silk saree with traditional temple border.',
-    },
-    {
-      id: 3,
-      name: 'Paithani Silk Saree',
-      price: 149.99,
-      originalPrice: 249.99,
-      rating: 4.9,
-      reviewCount: 178,
-      image: '/images/products/paithani-silk.jpg',
-      category: 'Silk Sarees',
-      inStock: true,
-      isNew: false,
-      isBestseller: true,
-      description: 'Maharashtrian Paithani silk saree with peacock motif.',
-    },
-  ] as Product[];
-
-  return related;
 };
 
 // Star Rating Component
@@ -176,14 +88,14 @@ function StarRating({ rating, size = 'md' }: { rating: number; size?: 'sm' | 'md
       {[...Array(5)].map((_, i) => (
         <Star
           key={i}
-          className={`${iconSize} ${i < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+          className={`${iconSize} ${i < Math.floor(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
         />
       ))}
     </div>
   );
 }
 
-// Quantity Selector Component
+// Quantity Selector
 function QuantitySelector({
   quantity,
   onQuantityChange,
@@ -204,9 +116,9 @@ function QuantitySelector({
       </button>
       <span className="w-12 text-center font-semibold">{quantity}</span>
       <button
-        onClick={() => onQuantityChange(Math.min(maxStock, quantity + 1))}
+        onClick={() => onQuantityChange(Math.min(maxStock || 10, quantity + 1))}
         className="p-2 transition-colors hover:bg-gray-50 disabled:opacity-50"
-        disabled={quantity >= maxStock}
+        disabled={quantity >= (maxStock || 10)}
       >
         <Plus className="h-4 w-4" />
       </button>
@@ -214,14 +126,13 @@ function QuantitySelector({
   );
 }
 
-// Image Gallery Component
+// Image Gallery
 function ImageGallery({ images, productName }: { images: string[]; productName: string }) {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
 
   return (
     <div className="space-y-4">
-      {/* Main Image */}
       <div
         className="relative aspect-square cursor-zoom-in overflow-hidden rounded-2xl bg-gradient-to-br from-amber-100 to-amber-50"
         onMouseEnter={() => setIsZoomed(true)}
@@ -236,7 +147,6 @@ function ImageGallery({ images, productName }: { images: string[]; productName: 
         />
       </div>
 
-      {/* Thumbnails */}
       {images.length > 1 && (
         <div className="flex gap-3 overflow-x-auto pb-2">
           {images.map((img, idx) => (
@@ -256,7 +166,7 @@ function ImageGallery({ images, productName }: { images: string[]; productName: 
   );
 }
 
-// Review Card Component
+// Review Card
 function ReviewCard({ review }: { review: Product['reviews'][0] }) {
   return (
     <div className="border-b border-gray-100 pb-6 last:border-0">
@@ -271,8 +181,7 @@ function ReviewCard({ review }: { review: Product['reviews'][0] }) {
               <span>{review.date}</span>
               {review.verified && (
                 <span className="flex items-center gap-1 text-green-600">
-                  <Check className="h-3 w-3" />
-                  Verified Purchase
+                  <Check className="h-3 w-3" /> Verified Purchase
                 </span>
               )}
             </div>
@@ -287,7 +196,7 @@ function ReviewCard({ review }: { review: Product['reviews'][0] }) {
 }
 
 // Related Product Card
-function RelatedProductCard({ product }: { product: Product }) {
+function RelatedProductCard({ product }: { product: any }) {
   const router = useRouter();
 
   return (
@@ -297,7 +206,7 @@ function RelatedProductCard({ product }: { product: Product }) {
     >
       <div className="relative h-40 bg-gradient-to-br from-amber-100 to-amber-50">
         <Image
-          src={product.image}
+          src={product.image || product.variants?.[0]?.image}
           alt={product.name}
           fill
           className="object-cover transition-transform duration-500 group-hover:scale-110"
@@ -305,48 +214,69 @@ function RelatedProductCard({ product }: { product: Product }) {
       </div>
       <div className="p-3">
         <div className="mb-1 flex items-center gap-1">
-          <StarRating rating={product.rating} size="sm" />
-          <span className="text-xs text-gray-500">({product.reviewCount})</span>
+          <StarRating rating={4.8} size="sm" />
+          <span className="text-xs text-gray-500">(12)</span>
         </div>
         <h3 className="mb-1 line-clamp-2 text-sm font-bold text-gray-900 transition-colors group-hover:text-[#8B4513]">
           {product.name}
         </h3>
         <div className="flex items-center gap-2">
-          <span className="text-lg font-bold text-[#8B4513]">${product.price}</span>
-          {product.originalPrice && (
-            <span className="text-xs text-gray-400 line-through">${product.originalPrice}</span>
-          )}
+          <span className="text-lg font-bold text-[#8B4513]">${product.base_price}</span>
         </div>
       </div>
     </div>
   );
 }
 
-// Main Product Detail Page Component
+// Main Component
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
   const productId = parseInt(params.id as string);
 
   const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'care' | 'reviews'>(
     'description'
   );
   const [addedToCart, setAddedToCart] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
-  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   const { addToCart } = useCart();
 
+  // Fetch single product
   useEffect(() => {
-    const foundProduct = getProductById(productId);
-    if (foundProduct) {
-      setProduct(foundProduct);
-      setRelatedProducts(getRelatedProducts(foundProduct));
-    } else {
-      // Product not found, redirect to shop
-      router.push('/shop');
-    }
+    if (!productId) return;
+
+    setIsLoading(true);
+    fetch(`/api/products/${productId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && !data.error) {
+          const mappedProduct = mapDbProductToFrontend(data);
+          setProduct(mappedProduct);
+
+          // Fetch related products (same category)
+          return fetch(`/api/products?category=${encodeURIComponent(data.category)}`);
+        } else {
+          router.push('/shop');
+        }
+      })
+      .then(res => res?.json())
+      .then(relatedData => {
+        if (relatedData) {
+          // Filter out current product and take first 4
+          const filtered = relatedData.filter((p: any) => p.id !== productId).slice(0, 4);
+          setRelatedProducts(filtered);
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching product:', err);
+        router.push('/shop');
+      })
+      .finally(() => setIsLoading(false));
   }, [productId, router]);
 
   const handleAddToCart = () => {
@@ -365,13 +295,21 @@ export default function ProductDetailPage() {
     setTimeout(() => setAddedToCart(false), 3000);
   };
 
-  if (!product) {
+  if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="mx-auto mb-4 h-16 w-16 animate-spin rounded-full border-4 border-[#8B4513] border-t-transparent" />
-          <p className="text-gray-600">Loading product...</p>
+          <p className="text-gray-600">Loading product details...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <p className="text-red-600">Product not found</p>
       </div>
     );
   }
@@ -401,21 +339,19 @@ export default function ProductDetailPage() {
               {product.category}
             </Link>
             <span className="text-gray-400">/</span>
-            <span className="text-gray-900">{product.name}</span>
+            <span className="font-medium text-gray-900">{product.name}</span>
           </div>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        {/* Product Main Section */}
+        {/* Main Product Section */}
         <div className="mb-8 rounded-2xl bg-white p-6 shadow-lg md:p-8">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-            {/* Image Gallery */}
             <ImageGallery images={product.images} productName={product.name} />
 
             {/* Product Info */}
             <div>
-              {/* Badges */}
               <div className="mb-4 flex gap-2">
                 {product.isBestseller && (
                   <span className="rounded-full bg-amber-500 px-3 py-1 text-xs font-semibold text-white">
@@ -429,12 +365,11 @@ export default function ProductDetailPage() {
                 )}
                 {discount > 0 && (
                   <span className="rounded-full bg-red-500 px-3 py-1 text-xs font-semibold text-white">
-                    {discount}% OFF
+                    -{discount}% OFF
                   </span>
                 )}
               </div>
 
-              {/* Title */}
               <h1 className="mb-2 font-serif text-2xl font-bold text-gray-900 md:text-3xl">
                 {product.name}
               </h1>
@@ -443,7 +378,6 @@ export default function ProductDetailPage() {
                 <p className="mb-3 text-sm text-gray-500">{product.subCategory}</p>
               )}
 
-              {/* Rating */}
               <div className="mb-4 flex items-center gap-3">
                 <StarRating rating={product.rating} size="lg" />
                 <span className="text-sm text-gray-500">{product.reviewCount} reviews</span>
@@ -452,7 +386,6 @@ export default function ProductDetailPage() {
                 </span>
               </div>
 
-              {/* Price */}
               <div className="mb-6">
                 <div className="flex items-center gap-3">
                   <span className="text-3xl font-bold text-[#8B4513]">
@@ -464,15 +397,11 @@ export default function ProductDetailPage() {
                     </span>
                   )}
                 </div>
-                <p className="mt-1 text-xs text-gray-500">
-                  Tax included. Free shipping on orders over $50
-                </p>
+                <p className="mt-1 text-xs text-gray-500">Tax included • Free shipping over $50</p>
               </div>
 
-              {/* Short Description */}
               <p className="mb-6 leading-relaxed text-gray-600">{product.description}</p>
 
-              {/* Key Features */}
               <div className="mb-6">
                 <h3 className="mb-3 font-semibold text-gray-900">Key Features:</h3>
                 <ul className="space-y-2">
@@ -485,40 +414,40 @@ export default function ProductDetailPage() {
                 </ul>
               </div>
 
-              {/* Quantity and Add to Cart */}
+              {/* Quantity & Add to Cart */}
               <div className="mb-6 flex flex-wrap gap-4">
                 <QuantitySelector
                   quantity={quantity}
                   onQuantityChange={setQuantity}
-                  maxStock={product.inStock ? 10 : 0}
+                  maxStock={10}
                 />
                 <button
                   onClick={handleAddToCart}
                   disabled={!product.inStock}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#8B4513] to-[#D2691E] py-3 font-semibold text-white transition-all duration-300 ${
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#8B4513] to-[#D2691E] py-3 font-semibold text-white transition-all ${
                     product.inStock
-                      ? 'hover:scale-[1.02] hover:shadow-lg active:scale-95'
+                      ? 'hover:scale-[1.02] hover:shadow-lg'
                       : 'cursor-not-allowed opacity-50'
                   }`}
                 >
                   <ShoppingCart className="h-5 w-5" />
                   Add to Cart — ${(product.price * quantity).toFixed(2)}
                 </button>
+
                 <button
                   onClick={() => setIsWishlisted(!isWishlisted)}
                   className="rounded-xl border border-gray-300 p-3 transition-colors hover:border-red-500 hover:text-red-500"
-                  aria-label="Add to wishlist"
                 >
                   <Heart className={`h-5 w-5 ${isWishlisted ? 'fill-red-500 text-red-500' : ''}`} />
                 </button>
+
                 <button className="rounded-xl border border-gray-300 p-3 transition-colors hover:border-[#8B4513] hover:text-[#8B4513]">
                   <Share2 className="h-5 w-5" />
                 </button>
               </div>
 
-              {/* Success Message */}
               {addedToCart && (
-                <div className="animate-in fade-in slide-in-from-top-2 mb-6 flex items-center gap-2 rounded-xl border border-green-500 bg-green-50 p-3">
+                <div className="mb-6 flex items-center gap-2 rounded-xl border border-green-500 bg-green-50 p-3">
                   <Check className="h-5 w-5 text-green-600" />
                   <span className="text-green-700">
                     Added to cart!{' '}
@@ -530,47 +459,46 @@ export default function ProductDetailPage() {
               )}
 
               {/* Shipping Info */}
-              <div className="space-y-3 border-t border-gray-100 pt-6">
-                <div className="flex items-center gap-3 text-sm">
+              <div className="space-y-3 border-t border-gray-100 pt-6 text-sm">
+                <div className="flex items-center gap-3">
                   <Truck className="h-5 w-5 text-[#8B4513]" />
-                  <span className="text-gray-600">Free shipping on orders over $50</span>
+                  <span>Free shipping on orders over $50</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm">
+                <div className="flex items-center gap-3">
                   <Shield className="h-5 w-5 text-[#8B4513]" />
-                  <span className="text-gray-600">30-day satisfaction guarantee</span>
+                  <span>30-day satisfaction guarantee</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm">
+                <div className="flex items-center gap-3">
                   <RefreshCw className="h-5 w-5 text-[#8B4513]" />
-                  <span className="text-gray-600">Easy returns within 30 days</span>
+                  <span>Easy returns within 30 days</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Tabs Section */}
+        {/* Tabs Section - Description, Specs, Care, Reviews */}
         <div className="mb-8 overflow-hidden rounded-2xl bg-white shadow-lg">
-          <div className="overflow-x-auto border-b border-gray-200">
-            <div className="flex min-w-max">
-              {[
-                { id: 'description', label: 'Description' },
-                { id: 'specs', label: 'Specifications' },
-                { id: 'care', label: 'Care Instructions' },
-                { id: 'reviews', label: `Reviews (${product.reviewCount})` },
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-6 py-3 font-semibold transition-colors ${
-                    activeTab === tab.id
-                      ? 'border-b-2 border-[#8B4513] text-[#8B4513]'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
+          {/* Tab Buttons */}
+          <div className="flex overflow-x-auto border-b border-gray-200">
+            {[
+              { id: 'description', label: 'Description' },
+              { id: 'specs', label: 'Specifications' },
+              { id: 'care', label: 'Care Instructions' },
+              { id: 'reviews', label: `Reviews (${product.reviewCount})` },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`px-6 py-4 font-semibold whitespace-nowrap transition-colors ${
+                  activeTab === tab.id
+                    ? 'border-b-2 border-[#8B4513] text-[#8B4513]'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
 
           <div className="p-6 md:p-8">
@@ -592,7 +520,7 @@ export default function ProductDetailPage() {
             {activeTab === 'specs' && (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {product.specifications.map((spec, idx) => (
-                  <div key={idx} className="flex justify-between border-b border-gray-100 py-2">
+                  <div key={idx} className="flex justify-between border-b border-gray-100 py-3">
                     <span className="font-semibold text-gray-700">{spec.label}</span>
                     <span className="text-gray-600">{spec.value}</span>
                   </div>
@@ -602,9 +530,7 @@ export default function ProductDetailPage() {
 
             {activeTab === 'care' && (
               <div className="space-y-4">
-                <h3 className="text-lg font-bold text-gray-900">
-                  How to Care for Your Handloom Product
-                </h3>
+                <h3 className="text-lg font-bold text-gray-900">Care Instructions</h3>
                 <ul className="space-y-3">
                   {product.careInstructions.map((instruction, idx) => (
                     <li key={idx} className="flex items-center gap-3 text-gray-600">
@@ -618,26 +544,24 @@ export default function ProductDetailPage() {
 
             {activeTab === 'reviews' && (
               <div className="space-y-6">
-                {/* Review Summary */}
                 <div className="flex items-center gap-6 border-b border-gray-200 pb-6">
                   <div className="text-center">
                     <div className="text-4xl font-bold text-gray-900">{product.rating}</div>
                     <StarRating rating={product.rating} size="md" />
                     <div className="mt-1 text-sm text-gray-500">{product.reviewCount} reviews</div>
                   </div>
-                  <div className="flex-1">
-                    <button className="rounded-lg bg-[#8B4513] px-4 py-2 text-white transition-colors hover:bg-[#5C2E0B]">
-                      Write a Review
-                    </button>
-                  </div>
+                  <button className="rounded-lg bg-[#8B4513] px-6 py-2.5 text-white hover:bg-[#5C2E0B]">
+                    Write a Review
+                  </button>
                 </div>
 
-                {/* Reviews List */}
-                <div className="space-y-6">
-                  {product.reviews.map(review => (
-                    <ReviewCard key={review.id} review={review} />
-                  ))}
-                </div>
+                {product.reviews.length > 0 ? (
+                  product.reviews.map(review => <ReviewCard key={review.id} review={review} />)
+                ) : (
+                  <p className="py-8 text-center text-gray-500">
+                    No reviews yet. Be the first to review this product!
+                  </p>
+                )}
               </div>
             )}
           </div>
@@ -648,26 +572,23 @@ export default function ProductDetailPage() {
           <div>
             <h2 className="mb-6 font-serif text-2xl font-bold text-gray-900">You May Also Like</h2>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-              {relatedProducts.map(relatedProduct => (
-                <RelatedProductCard key={relatedProduct.id} product={relatedProduct} />
+              {relatedProducts.map(related => (
+                <RelatedProductCard key={related.id} product={related} />
               ))}
             </div>
           </div>
         )}
       </div>
 
-      {/* WhatsApp Contact Button */}
+      {/* WhatsApp Floating Button */}
       <div className="fixed right-6 bottom-6 z-40">
         <a
-          href="https://wa.me/1234567890?text=Hi%2C%20I%27m%20interested%20in%20the%20product%20from%20HandloomVilla"
+          href="https://wa.me/94712345678?text=Hi%2C%20I%27m%20interested%20in%20this%20product"
           target="_blank"
           rel="noopener noreferrer"
-          className="group flex h-14 w-14 items-center justify-center rounded-full bg-green-500 shadow-lg transition-all hover:scale-110 hover:shadow-xl"
+          className="group flex h-14 w-14 items-center justify-center rounded-full bg-green-500 shadow-lg transition-all hover:scale-110"
         >
           <MessageCircle className="h-7 w-7 text-white" />
-          <span className="invisible absolute right-full mr-3 hidden rounded-lg bg-gray-900 px-3 py-1.5 text-sm whitespace-nowrap text-white opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100 sm:block">
-            Questions? Chat with us
-          </span>
         </a>
       </div>
     </main>

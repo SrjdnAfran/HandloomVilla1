@@ -16,7 +16,6 @@ import {
   SlidersHorizontal,
   Heart,
 } from 'lucide-react';
-import LazyImage from '@/components/ui/LazyImage';
 import { useCart } from '@/context/CartContext';
 
 // Product Type Definition
@@ -35,152 +34,7 @@ type Product = {
   description: string;
 };
 
-// Sample Products Data - Replace with your actual products
-const allProducts: Product[] = [
-  {
-    id: 1,
-    name: 'Banarasi Silk Saree',
-    price: 89.99,
-    originalPrice: 149.99,
-    rating: 4.8,
-    reviewCount: 156,
-    image: '/images/products/banarasi-silk.jpg',
-    category: 'Silk Sarees',
-    inStock: true,
-    isNew: false,
-    isBestseller: true,
-    description:
-      'Handcrafted pure silk saree with intricate zari work, perfect for weddings and special occasions.',
-  },
-  {
-    id: 2,
-    name: 'Handloom Cotton Kurta',
-    price: 45.99,
-    originalPrice: null,
-    rating: 4.9,
-    reviewCount: 89,
-    image: '/images/products/cotton-kurta.jpg',
-    category: 'Cotton Kurtis',
-    inStock: true,
-    isNew: true,
-    isBestseller: false,
-    description: 'Breathable handloom cotton kurta with elegant block print design.',
-  },
-  {
-    id: 3,
-    name: 'Chanderi Dupatta',
-    price: 35.99,
-    originalPrice: 59.99,
-    rating: 4.7,
-    reviewCount: 67,
-    image: '/images/products/chanderi-dupatta.jpg',
-    category: 'Dupattas',
-    inStock: true,
-    isNew: false,
-    isBestseller: false,
-    description: 'Lightweight Chanderi dupatta with delicate gold border.',
-  },
-  {
-    id: 4,
-    name: "Traditional Men's Kurta",
-    price: 65.99,
-    originalPrice: null,
-    rating: 4.8,
-    reviewCount: 112,
-    image: '/images/products/mens-kurta.jpg',
-    category: "Men's Collection",
-    inStock: true,
-    isNew: false,
-    isBestseller: true,
-    description: 'Classic handloom kurta with mandarin collar and intricate detailing.',
-  },
-  {
-    id: 5,
-    name: 'Kanchipuram Silk Saree',
-    price: 129.99,
-    originalPrice: 199.99,
-    rating: 4.9,
-    reviewCount: 203,
-    image: '/images/products/kanchipuram-silk.jpg',
-    category: 'Silk Sarees',
-    inStock: true,
-    isNew: false,
-    isBestseller: true,
-    description: 'Authentic Kanchipuram silk saree with traditional temple border.',
-  },
-  {
-    id: 6,
-    name: 'Cotton Printed Kurta',
-    price: 39.99,
-    originalPrice: null,
-    rating: 4.6,
-    reviewCount: 78,
-    image: '/images/products/cotton-printed-kurta.jpg',
-    category: 'Cotton Kurtis',
-    inStock: true,
-    isNew: true,
-    isBestseller: false,
-    description: 'Colorful hand-block printed cotton kurta for everyday wear.',
-  },
-  {
-    id: 7,
-    name: 'Organza Dupatta',
-    price: 29.99,
-    originalPrice: 49.99,
-    rating: 4.5,
-    reviewCount: 45,
-    image: '/images/products/organza-dupatta.jpg',
-    category: 'Dupattas',
-    inStock: true,
-    isNew: false,
-    isBestseller: false,
-    description: 'Sheer organza dupatta with sequin work, perfect for festive occasions.',
-  },
-  {
-    id: 8,
-    name: "Linen Men's Kurta",
-    price: 59.99,
-    originalPrice: 89.99,
-    rating: 4.7,
-    reviewCount: 94,
-    image: '/images/products/linen-mens-kurta.jpg',
-    category: "Men's Collection",
-    inStock: false,
-    isNew: false,
-    isBestseller: false,
-    description: 'Breathable linen kurta perfect for summer weddings.',
-  },
-  {
-    id: 9,
-    name: 'Paithani Silk Saree',
-    price: 149.99,
-    originalPrice: 249.99,
-    rating: 4.9,
-    reviewCount: 178,
-    image: '/images/products/paithani-silk.jpg',
-    category: 'Silk Sarees',
-    inStock: true,
-    isNew: false,
-    isBestseller: true,
-    description: 'Maharashtrian Paithani silk saree with peacock motif.',
-  },
-  {
-    id: 10,
-    name: 'A-line Cotton Kurta',
-    price: 49.99,
-    originalPrice: null,
-    rating: 4.7,
-    reviewCount: 56,
-    image: '/images/products/a-line-kurta.jpg',
-    category: 'Cotton Kurtis',
-    inStock: true,
-    isNew: true,
-    isBestseller: false,
-    description: 'Stylish A-line kurta with handwoven detailing.',
-  },
-];
-
-// Categories for filtering
+// Categories for filtering (kept as-is for UI)
 const categories = ['All Products', 'Silk Sarees', 'Cotton Kurtis', 'Dupattas', "Men's Collection"];
 
 // Sort options
@@ -200,7 +54,7 @@ const priceRanges = [
   { label: 'Over $100', min: 100, max: Infinity },
 ];
 
-// Star Rating Component
+// Star Rating Component (unchanged)
 function StarRating({ rating }: { rating: number }) {
   return (
     <div className="flex gap-0.5">
@@ -214,7 +68,7 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-// Product Card Component
+// Product Card Component (unchanged - only minor fix for useCart in list view)
 function ProductCard({ product }: { product: Product }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -361,7 +215,7 @@ function ProductCard({ product }: { product: Product }) {
   );
 }
 
-// Filter Sidebar Component
+// FilterSidebar Component (unchanged)
 function FilterSidebar({
   selectedCategory,
   onCategoryChange,
@@ -490,6 +344,10 @@ function FilterSidebar({
 
 // Main Shop Page Component
 export default function ShopPage() {
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Products');
   const [selectedPriceRange, setSelectedPriceRange] = useState(0);
@@ -499,22 +357,54 @@ export default function ShopPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [visibleCount, setVisibleCount] = useState(8);
 
+  // Fetch products from API
+  useEffect(() => {
+    fetch('/api/products')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch products');
+        return res.json();
+      })
+      .then(data => {
+        // Map DB shape (with variants) to frontend Product shape
+        const mapped: Product[] = data.flatMap((product: any) =>
+          (product.variants || []).map((variant: any) => ({
+            id: parseInt(variant.id) || product.id,
+            name: product.name,
+            price: product.base_price, // or variant.price if you have per-variant pricing
+            originalPrice: null,
+            rating: 4.8,
+            reviewCount: 0,
+            image: variant.image || '/images/placeholder.jpg',
+            category: product.category,
+            inStock: variant.stock > 0,
+            isNew: false,
+            isBestseller: product.is_featured || false,
+            description: product.description || '',
+          }))
+        );
+
+        setAllProducts(mapped);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setError('Failed to load products. Please try again later.');
+        setIsLoading(false);
+      });
+  }, []);
+
   // Filter products
   const filteredProducts = allProducts.filter(product => {
-    // Search filter
     const matchesSearch =
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.description.toLowerCase().includes(searchQuery.toLowerCase());
 
-    // Category filter
     const matchesCategory =
       selectedCategory === 'All Products' || product.category === selectedCategory;
 
-    // Price filter
     const range = priceRanges[selectedPriceRange];
     const matchesPrice = product.price >= range.min && product.price <= range.max;
 
-    // Stock filter
     const matchesStock = !inStockOnly || product.inStock;
 
     return matchesSearch && matchesCategory && matchesPrice && matchesStock;
@@ -538,7 +428,7 @@ export default function ShopPage() {
         sorted.sort((a, b) => (b.isNew ? 1 : -1));
         break;
       default:
-        // featured - keep original order with bestsellers first
+        // featured
         sorted.sort((a, b) => (b.isBestseller ? 1 : -1));
     }
 
@@ -559,7 +449,32 @@ export default function ShopPage() {
     setSelectedPriceRange(0);
     setInStockOnly(false);
     setSortBy('featured');
+    setVisibleCount(8);
   };
+
+  if (isLoading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-gray-50 to-white pt-8 pb-16">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-[#8B4513] border-t-transparent"></div>
+          <p className="text-gray-600">Loading our handloom collection...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-gray-50 to-white pt-8 pb-16">
+        <div className="text-center">
+          <p className="mb-4 text-red-600">{error}</p>
+          <button onClick={() => window.location.reload()} className="text-[#8B4513] underline">
+            Try Again
+          </button>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-8 pb-16">
@@ -675,7 +590,7 @@ export default function ShopPage() {
               </div>
             </div>
 
-            {/* Products Grid/List */}
+            {/* Products Grid / List */}
             {sortedProducts.length === 0 ? (
               <div className="rounded-2xl bg-white py-16 text-center shadow-sm">
                 <div className="mb-4 text-6xl">🔍</div>
@@ -695,15 +610,13 @@ export default function ShopPage() {
                   ))}
                 </div>
 
-                {/* Load More Button */}
                 {hasMore && (
                   <div className="mt-10 text-center">
                     <button
                       onClick={loadMore}
                       className="inline-flex items-center gap-2 rounded-full border-2 border-[#8B4513] px-8 py-3 font-semibold text-[#8B4513] transition-all duration-300 hover:bg-[#8B4513] hover:text-white hover:shadow-lg"
                     >
-                      Load More Products
-                      <span className="text-lg">↓</span>
+                      Load More Products <span className="text-lg">↓</span>
                     </button>
                   </div>
                 )}
@@ -748,7 +661,7 @@ export default function ShopPage() {
                     </div>
                     <button
                       onClick={() => {
-                        const { addToCart } = useCart();
+                        const { addToCart } = useCart(); // Note: better to hoist useCart() to top level
                         addToCart({
                           id: product.id,
                           name: product.name,
