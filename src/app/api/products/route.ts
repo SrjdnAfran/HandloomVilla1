@@ -1,4 +1,3 @@
-// app/api/products/route.ts
 import { neon } from '@neondatabase/serverless';
 import { NextResponse } from 'next/server';
 
@@ -39,25 +38,27 @@ export async function GET() {
   }
 }
 
-// POST new product
+// POST new product (without manually setting ID)
 export async function POST(request: Request) {
   try {
     const { product } = await request.json();
     
-    // Insert product
+    // Insert product - let the database auto-generate the ID
     const result = await sql`
       INSERT INTO products (
-        id, name, sku_prefix, category, sub_category, 
+        name, sku_prefix, category, sub_category, 
         description, base_price, materials, care_instructions
       )
       VALUES (
-        ${product.id}, ${product.name}, ${product.skuPrefix}, 
+        ${product.name}, ${product.skuPrefix}, 
         ${product.category}, ${product.subCategory || null},
         ${product.description || null}, ${product.basePrice}, 
         ${product.materials || null}, ${product.careInstructions || null}
       )
       RETURNING id
     `;
+    
+    const productId = result[0].id;
     
     // Insert variants if any
     if (product.variants && product.variants.length > 0) {
@@ -68,7 +69,7 @@ export async function POST(request: Request) {
             stock, serial_number, sku, slug, is_default
           )
           VALUES (
-            ${variant.id}, ${product.id}, ${variant.color}, 
+            ${variant.id}, ${productId}, ${variant.color}, 
             ${variant.colorCode || null}, ${variant.image},
             ${variant.stock}, ${variant.serialNumber}, 
             ${variant.sku}, ${variant.slug}, ${variant.isDefault || false}
@@ -77,7 +78,7 @@ export async function POST(request: Request) {
       }
     }
     
-    return NextResponse.json({ success: true, id: product.id });
+    return NextResponse.json({ success: true, id: productId });
   } catch (error) {
     console.error('POST Error:', error);
     return NextResponse.json({ error: 'Failed to save product' }, { status: 500 });

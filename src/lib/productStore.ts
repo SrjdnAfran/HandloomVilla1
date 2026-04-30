@@ -5,7 +5,7 @@ interface ProductState {
   products: Product[];
   isLoading: boolean;
   loadProducts: () => Promise<void>;
-  addProduct: (product: Product) => Promise<void>;
+  addProduct: (product: Omit<Product, 'id'>) => Promise<void>;
   updateProduct: (id: number, updatedProduct: Partial<Product>) => Promise<void>;
   deleteProduct: (id: number) => Promise<void>;
   addVariant: (productId: number, variant: ProductVariant) => Promise<void>;

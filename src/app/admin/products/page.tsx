@@ -156,7 +156,7 @@ export default function AdminProductsPage() {
     }
   };
 
-  // Handle Product Submit
+  //  handleProductSubmit function
   const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (
@@ -184,7 +184,7 @@ export default function AdminProductsPage() {
       description: productForm.description,
       materials: productForm.materials || undefined,
       careInstructions: productForm.careInstructions || undefined,
-      variants: [],
+      variants: [], // Start with empty variants array
       isFeatured: false,
       createdAt: new Date(),
     };
@@ -193,7 +193,8 @@ export default function AdminProductsPage() {
       await updateProduct(editingProduct.id, productData);
       alert('Product updated!');
     } else {
-      await addProduct({ id: Date.now(), ...productData } as Product);
+      // Don't pass an id - let the database generate it
+      await addProduct(productData as any);
       alert('Product created! Now add variants.');
     }
 
