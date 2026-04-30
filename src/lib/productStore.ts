@@ -1,4 +1,3 @@
-// lib/productStore.ts
 import { create } from 'zustand';
 import { Product, ProductVariant } from '@/data/products';
 
@@ -18,12 +17,39 @@ export const useProductStore = create<ProductState>((set, get) => ({
   products: [],
   isLoading: true,
 
-  // Load products from database
   loadProducts: async () => {
     try {
+      set({ isLoading: true });
       const response = await fetch('/api/products');
       if (!response.ok) throw new Error('Failed to load products');
-      const products = await response.json();
+      const data = await response.json();
+
+      // Map DB shape (snake_case) to frontend shape (camelCase)
+      const products: Product[] = data.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        skuPrefix: p.sku_prefix,
+        category: p.category,
+        subCategory: p.sub_category,
+        description: p.description,
+        basePrice: parseFloat(p.base_price),
+        materials: p.materials,
+        careInstructions: p.care_instructions,
+        isFeatured: p.is_featured,
+        createdAt: new Date(p.created_at),
+        variants: (p.variants || []).filter(Boolean).map((v: any) => ({
+          id: v.id,
+          color: v.color,
+          colorCode: v.colorCode || v.color_code,
+          image: v.image || v.image_url,
+          stock: v.stock,
+          serialNumber: v.serialNumber || v.serial_number,
+          sku: v.sku,
+          slug: v.slug,
+          isDefault: v.isDefault ?? v.is_default,
+        })),
+      }));
+
       set({ products, isLoading: false });
     } catch (error) {
       console.error('Failed to load products:', error);
@@ -31,7 +57,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
 
-  // Add product to database
   addProduct: async (product) => {
     try {
       const response = await fetch('/api/products', {
@@ -39,19 +64,14 @@ export const useProductStore = create<ProductState>((set, get) => ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ product }),
       });
-      
       if (!response.ok) throw new Error('Failed to save product');
-      
-      const result = await response.json();
-      set(state => ({ 
-        products: [...state.products, { ...product, id: result.id }] 
-      }));
+      // Reload from DB to get the real ID assigned by Postgres
+      await get().loadProducts();
     } catch (error) {
       console.error('Failed to add product:', error);
     }
   },
 
-  // Update product
   updateProduct: async (id, updatedProduct) => {
     try {
       await fetch(`/api/products/${id}`, {
@@ -59,33 +79,21 @@ export const useProductStore = create<ProductState>((set, get) => ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedProduct),
       });
-      
-      set(state => ({
-        products: state.products.map(p => 
-          p.id === id ? { ...p, ...updatedProduct } : p
-        ),
-      }));
+      await get().loadProducts();
     } catch (error) {
       console.error('Failed to update product:', error);
     }
   },
 
-  // Delete product
   deleteProduct: async (id) => {
     try {
-      await fetch(`/api/products/${id}`, {
-        method: 'DELETE',
-      });
-      
-      set(state => ({
-        products: state.products.filter(p => p.id !== id),
-      }));
+      await fetch(`/api/products/${id}`, { method: 'DELETE' });
+      await get().loadProducts();
     } catch (error) {
       console.error('Failed to delete product:', error);
     }
   },
 
-  // Add variant
   addVariant: async (productId, variant) => {
     try {
       await fetch(`/api/products/${productId}/variants`, {
@@ -93,20 +101,12 @@ export const useProductStore = create<ProductState>((set, get) => ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ variant }),
       });
-      
-      set(state => ({
-        products: state.products.map(p =>
-          p.id === productId 
-            ? { ...p, variants: [...p.variants, variant] }
-            : p
-        ),
-      }));
+      await get().loadProducts();
     } catch (error) {
       console.error('Failed to add variant:', error);
     }
   },
 
-  // Update variant
   updateVariant: async (productId, variantId, updatedVariant) => {
     try {
       await fetch(`/api/products/${productId}/variants/${variantId}`, {
@@ -114,41 +114,18 @@ export const useProductStore = create<ProductState>((set, get) => ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedVariant),
       });
-      
-      set(state => ({
-        products: state.products.map(p =>
-          p.id === productId
-            ? {
-                ...p,
-                variants: p.variants.map(v =>
-                  v.id === variantId ? { ...v, ...updatedVariant } : v
-                ),
-              }
-            : p
-        ),
-      }));
+      await get().loadProducts();
     } catch (error) {
       console.error('Failed to update variant:', error);
     }
   },
 
-  // Delete variant
   deleteVariant: async (productId, variantId) => {
     try {
       await fetch(`/api/products/${productId}/variants/${variantId}`, {
         method: 'DELETE',
       });
-      
-      set(state => ({
-        products: state.products.map(p =>
-          p.id === productId
-            ? {
-                ...p,
-                variants: p.variants.filter(v => v.id !== variantId),
-              }
-            : p
-        ),
-      }));
+      await get().loadProducts();
     } catch (error) {
       console.error('Failed to delete variant:', error);
     }
