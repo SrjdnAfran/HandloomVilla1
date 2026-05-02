@@ -97,6 +97,8 @@ function ImageGallery({ images, productName }: { images: string[]; productName: 
   const [selectedImage, setSelectedImage] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
 
+  const displayImages = images && images.length > 0 ? images : ['/images/placeholder.jpg'];
+
   return (
     <div className="space-y-4">
       <div
@@ -105,7 +107,7 @@ function ImageGallery({ images, productName }: { images: string[]; productName: 
         onMouseLeave={() => setIsZoomed(false)}
       >
         <Image
-          src={images[selectedImage] || images[0]}
+          src={displayImages[selectedImage]}
           alt={`${productName} - view ${selectedImage + 1}`}
           fill
           className={`object-cover transition-transform duration-500 ${isZoomed ? 'scale-150' : 'scale-100'}`}
@@ -113,9 +115,9 @@ function ImageGallery({ images, productName }: { images: string[]; productName: 
         />
       </div>
 
-      {images.length > 1 && (
+      {displayImages.length > 1 && (
         <div className="flex gap-3 overflow-x-auto pb-2">
-          {images.map((img, idx) => (
+          {displayImages.map((img, idx) => (
             <button
               key={idx}
               onClick={() => setSelectedImage(idx)}
@@ -141,6 +143,10 @@ function VariantSelector({
   selectedVariant: ProductVariant | null;
   onVariantChange: (variant: ProductVariant) => void;
 }) {
+  if (!variants || variants.length === 0) {
+    return null;
+  }
+
   return (
     <div className="mb-6">
       <h3 className="mb-3 font-semibold text-gray-900">Select Color:</h3>
@@ -174,7 +180,7 @@ function VariantSelector({
         ))}
       </div>
       <p className="mt-2 text-xs text-gray-500">
-        {selectedVariant && selectedVariant.stock !== undefined && selectedVariant.stock > 0
+        {selectedVariant && selectedVariant.stock > 0
           ? `${selectedVariant.stock} units available`
           : 'Out of stock'}
       </p>
@@ -230,7 +236,10 @@ export default function ProductDetailPage() {
         setSelectedVariant(defaultVariant || null);
 
         // Fetch related products
-        return fetch(`/api/products?category=${encodeURIComponent(data.category)}`);
+        if (data.category) {
+          return fetch(`/api/products?category=${encodeURIComponent(data.category)}`);
+        }
+        return null;
       })
       .then(res => res?.json())
       .then(relatedData => {
@@ -250,7 +259,7 @@ export default function ProductDetailPage() {
     if (!product || !selectedVariant) return;
 
     addToCart({
-      id: selectedVariant.id,
+      id: selectedVariant.id, // This is string, which matches CartItem id type
       productId: product.id,
       name: `${product.name} - ${selectedVariant.color}`,
       price: product.basePrice,
@@ -287,6 +296,12 @@ export default function ProductDetailPage() {
     );
   }
 
+  // Safe price formatting
+  const safePrice =
+    product.basePrice !== undefined && !isNaN(product.basePrice)
+      ? product.basePrice.toFixed(2)
+      : '0.00';
+
   return (
     <main className="min-h-screen bg-gray-50">
       {/* Breadcrumb */}
@@ -317,7 +332,10 @@ export default function ProductDetailPage() {
         {/* Main Product Section */}
         <div className="mb-8 rounded-2xl bg-white p-6 shadow-lg md:p-8">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-            <ImageGallery images={product.variants.map(v => v.image)} productName={product.name} />
+            <ImageGallery
+              images={product.variants?.map(v => v.image) || []}
+              productName={product.name}
+            />
 
             <div>
               <div className="mb-4 flex gap-2">
@@ -348,14 +366,14 @@ export default function ProductDetailPage() {
 
               <div className="mb-6">
                 <div className="flex items-center gap-3">
-                  <span className="text-3xl font-bold text-[#8B4513]">
-                    ${product.basePrice.toFixed(2)}
-                  </span>
+                  <span className="text-3xl font-bold text-[#8B4513]">${safePrice}</span>
                 </div>
                 <p className="mt-1 text-xs text-gray-500">Tax included • Free shipping over $50</p>
               </div>
 
-              <p className="mb-6 leading-relaxed text-gray-600">{product.description}</p>
+              <p className="mb-6 leading-relaxed text-gray-600">
+                {product.description || 'No description available.'}
+              </p>
 
               <VariantSelector
                 variants={product.variants}
@@ -379,7 +397,7 @@ export default function ProductDetailPage() {
                   }`}
                 >
                   <ShoppingCart className="h-5 w-5" />
-                  Add to Cart — ${(product.basePrice * quantity).toFixed(2)}
+                  Add to Cart — ${(parseFloat(safePrice) * quantity).toFixed(2)}
                 </button>
 
                 <button
@@ -517,6 +535,10 @@ export default function ProductDetailPage() {
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               {relatedProducts.map(related => {
                 const defaultVariant = related.variants?.[0];
+                const relatedPrice =
+                  related.basePrice !== undefined && !isNaN(related.basePrice)
+                    ? related.basePrice.toFixed(2)
+                    : '0.00';
                 return (
                   <Link key={related.id} href={`/products/${related.id}`}>
                     <div className="group cursor-pointer overflow-hidden rounded-xl bg-white shadow-md transition-all duration-300 hover:shadow-xl">
@@ -533,9 +555,7 @@ export default function ProductDetailPage() {
                           {related.name}
                         </h3>
                         <div className="flex items-center gap-2">
-                          <span className="text-lg font-bold text-[#8B4513]">
-                            ${related.basePrice}
-                          </span>
+                          <span className="text-lg font-bold text-[#8B4513]">${relatedPrice}</span>
                         </div>
                       </div>
                     </div>
