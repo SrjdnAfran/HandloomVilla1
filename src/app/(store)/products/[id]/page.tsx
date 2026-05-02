@@ -174,7 +174,9 @@ function VariantSelector({
         ))}
       </div>
       <p className="mt-2 text-xs text-gray-500">
-        {selectedVariant?.stock > 0 ? `${selectedVariant.stock} units available` : 'Out of stock'}
+        {selectedVariant && selectedVariant.stock !== undefined && selectedVariant.stock > 0
+          ? `${selectedVariant.stock} units available`
+          : 'Out of stock'}
       </p>
     </div>
   );
