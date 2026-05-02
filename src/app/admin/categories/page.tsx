@@ -2,115 +2,86 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, X, Edit2, Save, FolderPlus, Tag, Layers } from 'lucide-react';
-
-interface Category {
-  id: number;
-  name: string;
-  subCategories: string[];
-}
+import { useCategoryStore } from '@/lib/categoryStore';
 
 export default function AdminCategoriesPage() {
-  const [categories, setCategories] = useState<Category[]>([]);
+  const {
+    categories,
+    isLoading,
+    loadCategories,
+    addCategory,
+    renameCategory,
+    deleteCategory,
+    addSubCategory,
+    deleteSubCategory,
+  } = useCategoryStore();
+
   const [showForm, setShowForm] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
-  const [newSubCategory, setNewSubCategory] = useState('');
+  const [newSubCategoryInputs, setNewSubCategoryInputs] = useState<Record<number, string>>({});
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState('');
+  const [error, setError] = useState('');
 
-  // Load Categories
   useEffect(() => {
-    const saved = localStorage.getItem('handloomCategories');
+    loadCategories();
+  }, [loadCategories]);
 
-    if (saved) {
-      setCategories(JSON.parse(saved));
-    } else {
-      const defaultCategories: Category[] = [
-        {
-          id: 1,
-          name: 'Saree',
-          subCategories: ['Cotton', 'Silk', 'Embroidery Cotton', 'Embroidery Cotton'],
-        },
-        {
-          id: 2,
-          name: 'Sarong',
-          subCategories: ['Cotton', 'Silk', 'Embroidery Cotton', 'Embroidery Cotton'],
-        },
-      ];
-      setCategories(defaultCategories);
-      localStorage.setItem('handloomCategories', JSON.stringify(defaultCategories));
-    }
-  }, []);
-
-  // Auto save
-  useEffect(() => {
-    if (categories.length > 0) {
-      localStorage.setItem('handloomCategories', JSON.stringify(categories));
-    }
-  }, [categories]);
-
-  const addCategory = () => {
+  const handleAddCategory = async () => {
     if (!newCategoryName.trim()) return;
-    const newCat = {
-      id: Date.now(),
-      name: newCategoryName.trim(),
-      subCategories: [],
-    };
-    setCategories([...categories, newCat]);
-    setNewCategoryName('');
-    setShowForm(false);
-  };
-
-  const addSubCategory = (catId: number) => {
-    if (!newSubCategory.trim()) return;
-
-    setCategories(
-      categories.map(cat =>
-        cat.id === catId
-          ? { ...cat, subCategories: [...cat.subCategories, newSubCategory.trim()] }
-          : cat
-      )
-    );
-    setNewSubCategory('');
-  };
-
-  const deleteCategory = (id: number) => {
-    if (confirm('Delete this category? All subcategories will be removed.')) {
-      setCategories(categories.filter(c => c.id !== id));
+    setError('');
+    try {
+      await addCategory(newCategoryName.trim());
+      setNewCategoryName('');
+      setShowForm(false);
+    } catch (e: any) {
+      setError(e.message);
     }
   };
 
-  const deleteSubCategory = (catId: number, subName: string) => {
-    setCategories(
-      categories.map(cat =>
-        cat.id === catId
-          ? { ...cat, subCategories: cat.subCategories.filter(s => s !== subName) }
-          : cat
-      )
-    );
+  const handleAddSubCategory = async (categoryId: number) => {
+    const name = newSubCategoryInputs[categoryId]?.trim();
+    if (!name) return;
+    try {
+      await addSubCategory(categoryId, name);
+      setNewSubCategoryInputs(prev => ({ ...prev, [categoryId]: '' }));
+    } catch (e: any) {
+      setError(e.message);
+    }
   };
 
-  const startEditing = (cat: Category) => {
-    setEditingId(cat.id);
-    setEditingName(cat.name);
+  const handleDeleteCategory = async (id: number) => {
+    if (!confirm('Delete this category and all its subcategories?')) return;
+    await deleteCategory(id);
   };
 
-  const saveEditing = () => {
-    if (!editingName.trim()) return;
-    setCategories(
-      categories.map(cat => (cat.id === editingId ? { ...cat, name: editingName.trim() } : cat))
-    );
+  const handleDeleteSubCategory = async (categoryId: number, subId: number) => {
+    await deleteSubCategory(categoryId, subId);
+  };
+
+  const startEditing = (id: number, name: string) => {
+    setEditingId(id);
+    setEditingName(name);
+  };
+
+  const saveEditing = async () => {
+    if (!editingName.trim() || editingId === null) return;
+    await renameCategory(editingId, editingName.trim());
     setEditingId(null);
     setEditingName('');
   };
 
-  const cancelEditing = () => {
-    setEditingId(null);
-    setEditingName('');
-  };
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[400px] items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#8B4513] border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-6xl">
-      {/* Header Section */}
+      {/* Header */}
       <div className="mb-8 flex flex-col items-start justify-between gap-4 border-b border-amber-100 pb-4 sm:flex-row sm:items-center">
         <div>
           <div className="flex items-center gap-2">
@@ -120,19 +91,26 @@ export default function AdminCategoriesPage() {
             </h1>
           </div>
           <p className="mt-1 text-gray-500">
-            Organize your product catalog with categories and subcategories
+            {categories.length} categories ·{' '}
+            {categories.reduce((sum, c) => sum + c.sub_categories.length, 0)} subcategories
           </p>
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#8B4513] px-5 py-2.5 font-medium text-white shadow-sm transition-all hover:bg-[#5C2E0B] hover:shadow-md"
+          className="inline-flex items-center gap-2 rounded-lg bg-[#8B4513] px-5 py-2.5 font-medium text-white shadow-sm transition-all hover:bg-[#5C2E0B]"
         >
           <Plus size={18} />
-          <span>New Category</span>
+          New Category
         </button>
       </div>
 
-      {/* Add Category Modal / Form */}
+      {error && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+          {error}
+        </div>
+      )}
+
+      {/* Add Category Modal */}
       {showForm && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
@@ -145,36 +123,34 @@ export default function AdminCategoriesPage() {
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FolderPlus className="h-5 w-5 text-[#8B4513]" />
-                <h2 className="text-xl font-semibold text-gray-900">Create New Category</h2>
+                <h2 className="text-xl font-semibold">Create New Category</h2>
               </div>
               <button
                 onClick={() => setShowForm(false)}
-                className="rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                className="rounded-full p-1 hover:bg-gray-100"
               >
                 <X size={20} />
               </button>
             </div>
-            <div className="mb-4">
-              <label className="mb-1 block text-sm font-medium text-gray-700">Category Name</label>
-              <input
-                type="text"
-                value={newCategoryName}
-                onChange={e => setNewCategoryName(e.target.value)}
-                placeholder="e.g., Saree, Sarong"
-                className="w-full rounded-lg border border-gray-200 px-4 py-2.5 transition-all outline-none focus:border-[#8B4513] focus:ring-2 focus:ring-amber-100"
-                autoFocus
-              />
-            </div>
+            <input
+              type="text"
+              value={newCategoryName}
+              onChange={e => setNewCategoryName(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleAddCategory()}
+              placeholder="e.g., Saree, Sarong"
+              className="mb-4 w-full rounded-lg border border-gray-200 px-4 py-2.5 outline-none focus:border-[#8B4513] focus:ring-2 focus:ring-amber-100"
+              autoFocus
+            />
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowForm(false)}
-                className="rounded-lg px-4 py-2 text-gray-600 transition-colors hover:bg-gray-100"
+                className="rounded-lg px-4 py-2 text-gray-600 hover:bg-gray-100"
               >
                 Cancel
               </button>
               <button
-                onClick={addCategory}
-                className="rounded-lg bg-[#8B4513] px-4 py-2 text-white transition-colors hover:bg-[#5C2E0B]"
+                onClick={handleAddCategory}
+                className="rounded-lg bg-[#8B4513] px-4 py-2 text-white hover:bg-[#5C2E0B]"
               >
                 Create Category
               </button>
@@ -183,17 +159,15 @@ export default function AdminCategoriesPage() {
         </div>
       )}
 
-      {/* Categories Grid */}
+      {/* Categories List */}
       {categories.length === 0 ? (
         <div className="rounded-xl border border-amber-100 bg-white p-12 text-center shadow-sm">
-          <div className="mb-3 text-gray-300">
-            <FolderPlus size={48} className="mx-auto" />
-          </div>
+          <FolderPlus size={48} className="mx-auto mb-3 text-gray-300" />
           <h3 className="text-lg font-medium text-gray-900">No categories yet</h3>
           <p className="mt-1 text-gray-500">Get started by creating your first category</p>
           <button
             onClick={() => setShowForm(true)}
-            className="mt-4 inline-flex items-center gap-2 font-medium text-[#8B4513] transition-colors hover:text-[#5C2E0B]"
+            className="mt-4 inline-flex items-center gap-2 font-medium text-[#8B4513] hover:text-[#5C2E0B]"
           >
             <Plus size={16} /> Create Category
           </button>
@@ -215,18 +189,19 @@ export default function AdminCategoriesPage() {
                         type="text"
                         value={editingName}
                         onChange={e => setEditingName(e.target.value)}
-                        className="rounded-lg border border-gray-200 px-3 py-1.5 text-lg font-medium focus:border-[#8B4513] focus:ring-2 focus:ring-amber-100"
+                        onKeyDown={e => e.key === 'Enter' && saveEditing()}
+                        className="rounded-lg border border-gray-200 px-3 py-1.5 text-lg font-medium focus:border-[#8B4513] focus:outline-none"
                         autoFocus
                       />
                       <button
                         onClick={saveEditing}
-                        className="rounded-lg p-1 text-green-600 transition-colors hover:bg-green-50"
+                        className="rounded-lg p-1 text-green-600 hover:bg-green-50"
                       >
                         <Save size={18} />
                       </button>
                       <button
-                        onClick={cancelEditing}
-                        className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100"
+                        onClick={() => setEditingId(null)}
+                        className="rounded-lg p-1 text-gray-400 hover:bg-gray-100"
                       >
                         <X size={18} />
                       </button>
@@ -235,7 +210,7 @@ export default function AdminCategoriesPage() {
                     <>
                       <h3 className="text-xl font-semibold text-[#5C2E0B]">{cat.name}</h3>
                       <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-[#8B4513]">
-                        {cat.subCategories.length}
+                        {cat.sub_categories.length}
                       </span>
                     </>
                   )}
@@ -243,63 +218,61 @@ export default function AdminCategoriesPage() {
                 <div className="flex items-center gap-2">
                   {editingId !== cat.id && (
                     <button
-                      onClick={() => startEditing(cat)}
-                      className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-amber-50 hover:text-[#8B4513]"
-                      title="Edit category"
+                      onClick={() => startEditing(cat.id, cat.name)}
+                      className="rounded-lg p-1.5 text-gray-400 hover:bg-amber-50 hover:text-[#8B4513]"
                     >
-                      <Edit2 size="16" />
+                      <Edit2 size={16} />
                     </button>
                   )}
                   <button
-                    onClick={() => deleteCategory(cat.id)}
-                    className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
-                    title="Delete category"
+                    onClick={() => handleDeleteCategory(cat.id)}
+                    className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
                   >
-                    <Trash2 size="16" />
+                    <Trash2 size={16} />
                   </button>
                 </div>
               </div>
 
-              {/* Subcategories Section */}
+              {/* Subcategories */}
               <div className="p-6">
                 {/* Add Subcategory Input */}
                 <div className="mb-6 flex gap-3">
                   <input
                     type="text"
-                    value={newSubCategory}
-                    onChange={e => setNewSubCategory(e.target.value)}
+                    value={newSubCategoryInputs[cat.id] || ''}
+                    onChange={e =>
+                      setNewSubCategoryInputs(prev => ({ ...prev, [cat.id]: e.target.value }))
+                    }
+                    onKeyDown={e => e.key === 'Enter' && handleAddSubCategory(cat.id)}
                     placeholder="Add a subcategory..."
-                    className="flex-1 rounded-lg border border-gray-200 px-4 py-2.5 transition-all outline-none focus:border-[#8B4513] focus:ring-2 focus:ring-amber-100"
-                    onKeyDown={e => e.key === 'Enter' && addSubCategory(cat.id)}
+                    className="flex-1 rounded-lg border border-gray-200 px-4 py-2.5 outline-none focus:border-[#8B4513] focus:ring-2 focus:ring-amber-100"
                   />
                   <button
-                    onClick={() => addSubCategory(cat.id)}
-                    className="inline-flex items-center gap-2 rounded-lg bg-[#8B4513] px-5 py-2.5 font-medium text-white transition-colors hover:bg-[#5C2E0B]"
+                    onClick={() => handleAddSubCategory(cat.id)}
+                    className="inline-flex items-center gap-2 rounded-lg bg-[#8B4513] px-5 py-2.5 font-medium text-white hover:bg-[#5C2E0B]"
                   >
-                    <Plus size="16" />
-                    <span>Add</span>
+                    <Plus size={16} /> Add
                   </button>
                 </div>
 
-                {/* Subcategories List */}
-                {cat.subCategories.length === 0 ? (
+                {/* Subcategory Tags */}
+                {cat.sub_categories.length === 0 ? (
                   <div className="rounded-lg border border-dashed border-amber-200 bg-amber-50/30 py-8 text-center">
-                    <p className="text-sm text-amber-500">No subcategories yet. Add one above.</p>
+                    <p className="text-sm text-amber-500">No subcategories yet.</p>
                   </div>
                 ) : (
                   <div className="flex flex-wrap gap-2">
-                    {cat.subCategories.map((sub, index) => (
+                    {cat.sub_categories.map(sub => (
                       <div
-                        key={index}
-                        className="group inline-flex items-center gap-1.5 rounded-full bg-[#8B4513] py-1.5 pr-1.5 pl-3 shadow-sm transition-all hover:bg-[#5C2E0B]"
+                        key={sub.id}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-[#8B4513] py-1.5 pr-1.5 pl-3 shadow-sm hover:bg-[#5C2E0B]"
                       >
-                        <span className="text-sm text-white">{sub}</span>
+                        <span className="text-sm text-white">{sub.name}</span>
                         <button
-                          onClick={() => deleteSubCategory(cat.id, sub)}
-                          className="rounded-full p-0.5 text-white/70 transition-colors hover:bg-white/20 hover:text-white"
-                          title="Remove subcategory"
+                          onClick={() => handleDeleteSubCategory(cat.id, sub.id)}
+                          className="rounded-full p-0.5 text-white/70 hover:bg-white/20 hover:text-white"
                         >
-                          <X size="14" />
+                          <X size={14} />
                         </button>
                       </div>
                     ))}

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useProductStore } from '@/lib/productStore';
 import { Product, ProductVariant } from '@/data/products';
+import { useCategoryStore } from '@/lib/categoryStore';
 
 interface Category {
   id: number;
@@ -39,7 +40,7 @@ export default function AdminProductsPage() {
   // Get loading state and loadProducts function
   const { isLoading, loadProducts } = useProductStore();
 
-  const [categories, setCategories] = useState<Category[]>([]);
+  const { categories, loadCategories } = useCategoryStore();
   const [showProductForm, setShowProductForm] = useState(false);
   const [showVariantModal, setShowVariantModal] = useState(false);
   const [expandedProductId, setExpandedProductId] = useState<number | null>(null);
@@ -94,9 +95,8 @@ export default function AdminProductsPage() {
 
   // Load Categories
   useEffect(() => {
-    const saved = localStorage.getItem('handloomCategories');
-    if (saved) setCategories(JSON.parse(saved));
-  }, []);
+    loadCategories();
+  }, [loadCategories]);
 
   // Generate variant SKU
   const generateVariantSKU = (
@@ -761,9 +761,9 @@ export default function AdminProductsPage() {
                         <option value="">Select Sub Category</option>
                         {categories
                           .find(c => c.name === productForm.category)
-                          ?.subCategories.map((sub, i) => (
-                            <option key={i} value={sub}>
-                              {sub}
+                          ?.sub_categories.map((sub, i) => (
+                            <option key={sub.id} value={sub.name}>
+                              {sub.name}
                             </option>
                           ))}
                       </select>
