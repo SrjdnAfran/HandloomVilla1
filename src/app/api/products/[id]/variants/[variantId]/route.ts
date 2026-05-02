@@ -1,16 +1,14 @@
-// app/api/products/[id]/variants/[variantId]/route.ts
 import { neon } from '@neondatabase/serverless';
 import { NextResponse } from 'next/server';
 
 const sql = neon(process.env.POSTGRES_URL!);
 
-// DELETE variant
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string; variantId: string }> }
 ) {
   try {
-    const { variantId } = await params; // 👈 AWAIT the params
+    const { variantId } = await params;
     await sql`DELETE FROM variants WHERE id = ${variantId}`;
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -19,13 +17,12 @@ export async function DELETE(
   }
 }
 
-// UPDATE variant
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string; variantId: string }> }
 ) {
   try {
-    const { variantId } = await params; // 👈 AWAIT the params
+    const { variantId } = await params;
     const updates = await request.json();
     
     await sql`

@@ -1,4 +1,3 @@
-// app/api/products/[id]/variants/route.ts
 import { neon } from '@neondatabase/serverless';
 import { NextResponse } from 'next/server';
 
@@ -9,7 +8,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params; // 👈 AWAIT the params
+    const { id } = await params;
     const productId = parseInt(id);
     const { variant } = await request.json();
     
