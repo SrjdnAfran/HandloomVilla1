@@ -3,10 +3,14 @@ import { NextResponse } from 'next/server';
 
 const sql = neon(process.env.POSTGRES_URL!);
 
-// GET all products with their variants
-export async function GET() {
+// GET all products with their variants (supports category and slug filtering)
+export async function GET(request: Request) {
   try {
-    const products = await sql`
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get('category');
+    const slug = searchParams.get('slug');
+    
+    let query = `
       SELECT 
         p.*,
         COALESCE(
@@ -27,9 +31,31 @@ export async function GET() {
         ) as variants
       FROM products p
       LEFT JOIN variants v ON p.id = v.product_id
-      GROUP BY p.id
-      ORDER BY p.id DESC
     `;
+    
+    const conditions = [];
+    const params: any[] = [];
+    
+    if (category && category !== 'undefined' && category !== 'null') {
+      conditions.push(`p.category = $${params.length + 1}`);
+      params.push(category);
+    }
+    
+    if (conditions.length > 0) {
+      query += ` WHERE ${conditions.join(' AND ')}`;
+    }
+    
+    query += ` GROUP BY p.id ORDER BY p.id DESC`;
+    
+    const products = await sql(query, params);
+    
+    // If slug is provided, filter to find the specific variant
+    if (slug && slug !== 'undefined' && slug !== 'null') {
+      const matchedProducts = products.filter((p: any) => 
+        p.variants?.some((v: any) => v.slug === slug)
+      );
+      return NextResponse.json(matchedProducts);
+    }
     
     return NextResponse.json(products);
   } catch (error) {
@@ -42,6 +68,11 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const { product } = await request.json();
+    
+    // Validate required fields
+    if (!product.name || !product.skuPrefix || !product.category || !product.basePrice) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
     
     // Insert product - let the database auto-generate the ID
     const result = await sql`

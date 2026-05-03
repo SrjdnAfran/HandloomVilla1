@@ -191,7 +191,7 @@ function VariantSelector({
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const productId = parseInt(params.id as string);
+  const slug = params.slug as string;
 
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
@@ -208,52 +208,47 @@ export default function ProductDetailPage() {
   const { addToCart } = useCart();
 
   useEffect(() => {
-    if (isNaN(productId)) {
-      setError('Invalid product ID');
-      setIsLoading(false);
-      return;
-    }
+    if (!slug) return;
 
     setIsLoading(true);
     setError(null);
 
-    fetch(`/api/products/${productId}`)
-      .then(async res => {
-        if (!res.ok) {
-          if (res.status === 404) throw new Error('Product not found');
-          throw new Error('Failed to fetch product');
-        }
-        const data = await res.json();
-        return data;
+    fetch(`/api/products?slug=${slug}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Product not found');
+        return res.json();
       })
       .then(data => {
-        if (data.error) throw new Error(data.error);
+        if (!data || data.length === 0) throw new Error('Product not found');
 
-        // Ensure basePrice is a number
-        const productData = {
-          ...data,
-          basePrice:
-            typeof data.base_price === 'number'
-              ? data.base_price
-              : parseFloat(data.base_price) || 0,
-        };
+        // Find product by slug in variants
+        let foundProduct: Product | null = null;
+        let foundVariant: ProductVariant | null = null;
 
-        setProduct(productData);
-        // Set default variant
-        const defaultVariant =
-          data.variants?.find((v: ProductVariant) => v.isDefault) || data.variants?.[0];
-        setSelectedVariant(defaultVariant || null);
+        for (const product of data) {
+          const variant = product.variants?.find((v: ProductVariant) => v.slug === slug);
+          if (variant) {
+            foundProduct = product;
+            foundVariant = variant;
+            break;
+          }
+        }
+
+        if (!foundProduct || !foundVariant) throw new Error('Product not found');
+
+        setProduct(foundProduct);
+        setSelectedVariant(foundVariant);
 
         // Fetch related products
-        if (data.category) {
-          return fetch(`/api/products?category=${encodeURIComponent(data.category)}`);
+        if (foundProduct.category) {
+          return fetch(`/api/products?category=${encodeURIComponent(foundProduct.category)}`);
         }
         return null;
       })
       .then(res => res?.json())
       .then(relatedData => {
         if (relatedData && Array.isArray(relatedData)) {
-          const filtered = relatedData.filter((p: Product) => p.id !== productId).slice(0, 4);
+          const filtered = relatedData.filter((p: Product) => p.id !== product?.id).slice(0, 4);
           setRelatedProducts(filtered);
         }
       })
@@ -262,7 +257,7 @@ export default function ProductDetailPage() {
         setError(err.message);
       })
       .finally(() => setIsLoading(false));
-  }, [productId]);
+  }, [slug, product?.id]);
 
   const handleAddToCart = () => {
     if (!product || !selectedVariant) return;
@@ -305,11 +300,10 @@ export default function ProductDetailPage() {
     );
   }
 
-  // Safe price formatting - convert to Rs (LKR)
   const safePrice =
     product.basePrice !== undefined && !isNaN(product.basePrice) && product.basePrice > 0
-      ? product.basePrice.toLocaleString('en-IN')
-      : '0';
+      ? product.basePrice.toFixed(2)
+      : '0.00';
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -332,15 +326,17 @@ export default function ProductDetailPage() {
               {product.category}
             </Link>
             <span className="text-gray-400">/</span>
-            <span className="font-medium text-gray-900">{product.name}</span>
+            <span className="font-medium text-gray-900">
+              {product.name} - {selectedVariant.color}
+            </span>
           </div>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* Main Product Section */}
-        <div className="mb-6 rounded-2xl bg-white p-4 shadow-lg md:p-5">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="mb-8 rounded-2xl bg-white p-6 shadow-lg md:p-8">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
             <ImageGallery
               images={product.variants?.map(v => v.image) || []}
               productName={product.name}
@@ -375,11 +371,9 @@ export default function ProductDetailPage() {
 
               <div className="mb-6">
                 <div className="flex items-center gap-3">
-                  <span className="text-3xl font-bold text-[#8B4513]">Rs. {safePrice}</span>
+                  <span className="text-3xl font-bold text-[#8B4513]">${safePrice}</span>
                 </div>
-                <p className="mt-1 text-xs text-gray-500">
-                  Tax included • Free shipping over Rs. 10,000
-                </p>
+                <p className="mt-1 text-xs text-gray-500">Tax included • Free shipping over $50</p>
               </div>
 
               <p className="mb-6 leading-relaxed text-gray-600">
@@ -408,8 +402,7 @@ export default function ProductDetailPage() {
                   }`}
                 >
                   <ShoppingCart className="h-5 w-5" />
-                  Add to Cart — Rs.{' '}
-                  {(parseFloat(safePrice.replace(/,/g, '')) * quantity).toLocaleString('en-IN')}
+                  Add to Cart — ${(parseFloat(safePrice) * quantity).toFixed(2)}
                 </button>
 
                 <button
@@ -439,7 +432,7 @@ export default function ProductDetailPage() {
               <div className="space-y-3 border-t border-gray-100 pt-6 text-sm">
                 <div className="flex items-center gap-3">
                   <Truck className="h-5 w-5 text-[#8B4513]" />
-                  <span>Free shipping on orders over Rs. 10,000</span>
+                  <span>Free shipping on orders over $50</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Shield className="h-5 w-5 text-[#8B4513]" />
@@ -540,7 +533,7 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* Related Products - COMPACT CARD DESIGN */}
+        {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div>
             <h2 className="mb-6 font-serif text-2xl font-bold text-gray-900">You May Also Like</h2>
@@ -551,11 +544,11 @@ export default function ProductDetailPage() {
                   related.basePrice !== undefined &&
                   !isNaN(related.basePrice) &&
                   related.basePrice > 0
-                    ? related.basePrice.toLocaleString('en-IN')
-                    : '0';
+                    ? related.basePrice.toFixed(2)
+                    : '0.00';
                 return (
                   <Link key={related.id} href={`/products/${related.id}`}>
-                    <div className="group cursor-pointer overflow-hidden rounded-xl bg-white shadow-md transition-all duration-300 hover:shadow-lg">
+                    <div className="group cursor-pointer overflow-hidden rounded-xl bg-white shadow-md transition-all duration-300 hover:shadow-xl">
                       <div className="relative h-40 bg-gradient-to-br from-amber-100 to-amber-50">
                         <Image
                           src={defaultVariant?.image || '/images/placeholder.jpg'}
@@ -565,13 +558,11 @@ export default function ProductDetailPage() {
                         />
                       </div>
                       <div className="p-3">
-                        <h3 className="mb-1 line-clamp-2 text-sm font-semibold text-gray-900 transition-colors group-hover:text-[#8B4513]">
+                        <h3 className="mb-1 line-clamp-2 text-sm font-bold text-gray-900 transition-colors group-hover:text-[#8B4513]">
                           {related.name}
                         </h3>
-                        <div className="mt-1 flex items-center gap-1">
-                          <span className="text-md font-bold text-[#8B4513]">
-                            Rs. {relatedPrice}
-                          </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg font-bold text-[#8B4513]">${relatedPrice}</span>
                         </div>
                       </div>
                     </div>
