@@ -3,23 +3,26 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export type CartItem = {
-  id: number;
+  id: string;
+  productId: number;
   name: string;
-  price: number;
+  price: number; // This should be a number
   quantity: number;
   image: string;
+  sku: string;
+  color: string;
   inStock: boolean;
 };
 
 type CartContextType = {
   cart: CartItem[];
-  addToCart: (product: CartItem) => void;
-  removeFromCart: (productId: number) => void;
-  updateQuantity: (productId: number, quantity: number) => void;
+  addToCart: (item: CartItem) => void;
+  removeFromCart: (id: string) => void;
+  updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
   getCartCount: () => number;
   getCartTotal: () => number;
-  isInCart: (productId: number) => boolean;
+  isInCart: (id: string) => boolean;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -32,7 +35,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const savedCart = localStorage.getItem('handloomCart');
     if (savedCart) {
       try {
-        setCart(JSON.parse(savedCart));
+        const parsedCart = JSON.parse(savedCart);
+        // Ensure price is a number for all items
+        const normalizedCart = parsedCart.map((item: any) => ({
+          ...item,
+          price: typeof item.price === 'string' ? parseFloat(item.price) : item.price,
+        }));
+        setCart(normalizedCart);
       } catch (e) {
         console.error('Failed to parse cart:', e);
       }
@@ -44,33 +53,33 @@ export function CartProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('handloomCart', JSON.stringify(cart));
   }, [cart]);
 
-  const addToCart = (product: CartItem) => {
+  const addToCart = (item: CartItem) => {
+    const normalizedItem = {
+      ...item,
+      price: typeof item.price === 'string' ? parseFloat(item.price) : item.price,
+    };
+
     setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.id);
+      const existingItem = prevCart.find(i => i.id === normalizedItem.id);
       if (existingItem) {
-        // Increase quantity if already in cart
-        return prevCart.map(item =>
-          item.id === product.id ? { ...item, quantity: item.quantity + product.quantity } : item
+        return prevCart.map(i =>
+          i.id === normalizedItem.id ? { ...i, quantity: i.quantity + normalizedItem.quantity } : i
         );
-      } else {
-        // Add new item
-        return [...prevCart, product];
       }
+      return [...prevCart, normalizedItem];
     });
   };
 
-  const removeFromCart = (productId: number) => {
-    setCart(prevCart => prevCart.filter(item => item.id !== productId));
+  const removeFromCart = (id: string) => {
+    setCart(prevCart => prevCart.filter(i => i.id !== id));
   };
 
-  const updateQuantity = (productId: number, quantity: number) => {
+  const updateQuantity = (id: string, quantity: number) => {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(id);
       return;
     }
-    setCart(prevCart =>
-      prevCart.map(item => (item.id === productId ? { ...item, quantity } : item))
-    );
+    setCart(prevCart => prevCart.map(i => (i.id === id ? { ...i, quantity } : i)));
   };
 
   const clearCart = () => {
@@ -85,8 +94,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return cart.reduce((total, item) => total + item.price * item.quantity, 0);
   };
 
-  const isInCart = (productId: number) => {
-    return cart.some(item => item.id === productId);
+  const isInCart = (id: string) => {
+    return cart.some(i => i.id === id);
   };
 
   return (

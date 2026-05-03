@@ -205,7 +205,7 @@ export default function Navbar() {
               ) : (
                 <Link
                   href="/login"
-                  className="rounded-full p-2 text-gray-600 transition-colors hover:bg-amber-50 hover:text-[#8B4513]"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full text-gray-600 transition-colors duration-200 hover:bg-amber-50 hover:text-[#8B4513]"
                   aria-label="Login"
                 >
                   <LogIn className="h-5 w-5" />

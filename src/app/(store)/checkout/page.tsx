@@ -43,7 +43,7 @@ function OrderSummary({ items, subtotal }: { items: any[]; subtotal: number }) {
               <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
             </div>
             <p className="text-sm font-semibold text-[#8B4513]">
-              ${(item.price * item.quantity).toFixed(2)}
+              Rs. {(item.price * item.quantity).toFixed(2)}
             </p>
           </div>
         ))}
@@ -53,19 +53,21 @@ function OrderSummary({ items, subtotal }: { items: any[]; subtotal: number }) {
       <div className="space-y-2 border-t border-gray-200 pt-3">
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Subtotal</span>
-          <span className="font-medium">${subtotal.toFixed(2)}</span>
+          <span className="font-medium">Rs. {subtotal.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Shipping</span>
-          <span className="font-medium">{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span>
+          <span className="font-medium">
+            {shipping === 0 ? 'Free' : `Rs. ${shipping.toFixed(2)}`}
+          </span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Estimated Tax</span>
-          <span className="font-medium">${tax.toFixed(2)}</span>
+          <span className="font-medium">Rs. {tax.toFixed(2)}</span>
         </div>
         <div className="flex justify-between border-t border-gray-200 pt-3 text-lg font-bold">
           <span>Total</span>
-          <span className="text-[#8B4513]">${total.toFixed(2)}</span>
+          <span className="text-[#8B4513]">Rs. {total.toFixed(2)}</span>
         </div>
       </div>
 
@@ -73,7 +75,7 @@ function OrderSummary({ items, subtotal }: { items: any[]; subtotal: number }) {
       {subtotal < 50 && (
         <div className="mt-4 rounded-xl bg-amber-50 p-3">
           <div className="mb-1 flex justify-between text-xs text-gray-600">
-            <span>Add ${(50 - subtotal).toFixed(2)} more for free shipping</span>
+            <span>Add Rs. ${(50 - subtotal).toFixed(2)} more for free shipping</span>
             <span>{Math.round((subtotal / 50) * 100)}%</span>
           </div>
           <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
@@ -98,7 +100,7 @@ function OrderSummary({ items, subtotal }: { items: any[]; subtotal: number }) {
           </div>
           <div className="flex items-center gap-1">
             <Truck className="h-3 w-3" />
-            <span>Free Shipping $50+</span>
+            <span>Free Shipping</span>
           </div>
         </div>
       </div>
@@ -537,26 +539,26 @@ function ReviewOrder({
               <span>
                 {item.name} x {item.quantity}
               </span>
-              <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+              <span className="font-medium">Rs. {(item.price * item.quantity).toFixed(2)}</span>
             </div>
           ))}
         </div>
         <div className="mt-3 space-y-1 border-t border-gray-100 pt-3">
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Subtotal</span>
-            <span>${subtotal.toFixed(2)}</span>
+            <span>Rs. {subtotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Shipping</span>
-            <span>{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span>
+            <span>{shipping === 0 ? 'Free' : `Rs. ${shipping.toFixed(2)}`}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Tax</span>
-            <span>${tax.toFixed(2)}</span>
+            <span>Rs. {tax.toFixed(2)}</span>
           </div>
           <div className="flex justify-between border-t border-gray-100 pt-2 font-bold">
             <span>Total</span>
-            <span className="text-[#8B4513]">${total.toFixed(2)}</span>
+            <span className="text-[#8B4513]">Rs. {total.toFixed(2)}</span>
           </div>
         </div>
       </div>

@@ -20,22 +20,31 @@ import {
 } from 'lucide-react';
 import { useCart, CartItem } from '@/context/CartContext';
 
-// Quantity Selector Component
+// Helper function to safely get price as number
+const getSafePrice = (price: any): number => {
+  if (typeof price === 'number') return price;
+  if (typeof price === 'string') return parseFloat(price) || 0;
+  return 0;
+};
+
+// Quantity Selector Component with stock limit
 function QuantitySelector({
   quantity,
   onQuantityChange,
-  productId,
+  maxStock,
   inStock,
 }: {
   quantity: number;
   onQuantityChange: (qty: number) => void;
-  productId: number;
+  maxStock: number;
   inStock: boolean;
 }) {
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleChange = async (newQuantity: number) => {
     if (newQuantity < 1 || !inStock) return;
+    if (newQuantity > maxStock) return;
+
     setIsUpdating(true);
     onQuantityChange(newQuantity);
     setTimeout(() => setIsUpdating(false), 300);
@@ -56,8 +65,8 @@ function QuantitySelector({
       </span>
       <button
         onClick={() => handleChange(quantity + 1)}
-        disabled={isUpdating}
-        className="p-2 transition-colors hover:bg-gray-50"
+        disabled={quantity >= maxStock || isUpdating || !inStock}
+        className="p-2 transition-colors hover:bg-gray-50 disabled:opacity-50"
         aria-label="Increase quantity"
       >
         <Plus className="h-4 w-4" />
@@ -71,17 +80,24 @@ function CartItemRow({
   item,
   onUpdateQuantity,
   onRemove,
+  stockMap,
 }: {
   item: CartItem;
-  onUpdateQuantity: (id: number, quantity: number) => void;
-  onRemove: (id: number) => void;
+  onUpdateQuantity: (id: string, quantity: number) => void;
+  onRemove: (id: string) => void;
+  stockMap: Map<string, number>;
 }) {
   const [imageError, setImageError] = useState(false);
+  const maxAvailableStock = stockMap.get(item.id) || item.quantity;
+
+  // Safely get price as number
+  const price = getSafePrice(item.price);
+  const totalPrice = price * item.quantity;
 
   return (
     <div className="flex flex-col items-start gap-4 border-b border-gray-100 py-6 last:border-0 sm:flex-row sm:items-center">
       {/* Product Image */}
-      <Link href={`/products/${item.id}`} className="flex-shrink-0">
+      <Link href={`/products/${item.productId}`} className="flex-shrink-0">
         <div className="relative h-24 w-24 overflow-hidden rounded-xl bg-gradient-to-br from-amber-100 to-amber-50">
           {!imageError ? (
             <Image
@@ -101,27 +117,31 @@ function CartItemRow({
 
       {/* Product Info */}
       <div className="min-w-0 flex-1">
-        <Link href={`/products/${item.id}`}>
+        <Link href={`/products/${item.productId}`}>
           <h3 className="line-clamp-2 font-bold text-gray-900 transition-colors hover:text-[#8B4513]">
             {item.name}
           </h3>
         </Link>
-        <p className="mt-1 text-sm text-gray-500">SKU: HL-{item.id.toString().padStart(6, '0')}</p>
+        <p className="mt-1 text-sm text-gray-500">SKU: {item.sku}</p>
+        <p className="text-xs text-gray-500">Color: {item.color}</p>
         <div className="mt-1 flex items-center gap-2">
           <span
             className={`rounded-full px-2 py-0.5 text-xs ${item.inStock ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}
           >
             {item.inStock ? 'In Stock' : 'Out of Stock'}
           </span>
+          {item.quantity > maxAvailableStock && (
+            <span className="rounded-full bg-yellow-100 px-2 py-0.5 text-xs text-yellow-700">
+              Stock reduced
+            </span>
+          )}
         </div>
       </div>
 
       {/* Price */}
       <div className="min-w-[100px] flex-shrink-0 text-center sm:text-left">
-        <span className="text-lg font-bold text-[#8B4513]">
-          ${(item.price * item.quantity).toFixed(2)}
-        </span>
-        <p className="text-xs text-gray-400">${item.price.toFixed(2)} each</p>
+        <span className="text-lg font-bold text-[#8B4513]">Rs. {totalPrice.toFixed(2)}</span>
+        <p className="text-xs text-gray-400">Rs. {price.toFixed(2)} each</p>
       </div>
 
       {/* Quantity */}
@@ -129,9 +149,12 @@ function CartItemRow({
         <QuantitySelector
           quantity={item.quantity}
           onQuantityChange={qty => onUpdateQuantity(item.id, qty)}
-          productId={item.id}
+          maxStock={maxAvailableStock}
           inStock={item.inStock}
         />
+        {item.quantity > maxAvailableStock && (
+          <p className="mt-1 text-xs text-red-500">Max available: {maxAvailableStock}</p>
+        )}
       </div>
 
       {/* Remove Button */}
@@ -148,8 +171,6 @@ function CartItemRow({
 
 // Empty Cart Component
 function EmptyCart() {
-  const router = useRouter();
-
   return (
     <div className="py-16 text-center md:py-20">
       <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-amber-100">
@@ -167,12 +188,6 @@ function EmptyCart() {
         >
           Continue Shopping
           <ArrowRight className="h-4 w-4" />
-        </Link>
-        <Link
-          href="/collection"
-          className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-300 px-6 py-3 font-semibold text-gray-700 transition-all duration-300 hover:bg-gray-50"
-        >
-          Browse Collections
         </Link>
       </div>
 
@@ -210,31 +225,31 @@ function OrderSummary({ subtotal, onCheckout }: { subtotal: number; onCheckout: 
       <div className="space-y-3 border-b border-gray-200 pb-4">
         <div className="flex justify-between text-gray-600">
           <span>Subtotal</span>
-          <span className="font-medium">${subtotal.toFixed(2)}</span>
+          <span className="font-medium">Rs. {subtotal.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-gray-600">
           <div className="flex items-center gap-2">
             <span>Shipping</span>
             {subtotal > 50 && <span className="text-xs text-green-600">(Free)</span>}
           </div>
-          <span>{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span>
+          <span>{shipping === 0 ? 'Free' : `Rs. ${shipping.toFixed(2)}`}</span>
         </div>
         <div className="flex justify-between text-gray-600">
           <span>Estimated Tax</span>
-          <span>${tax.toFixed(2)}</span>
+          <span>Rs. {tax.toFixed(2)}</span>
         </div>
       </div>
 
       <div className="mb-6 flex justify-between pt-4">
         <span className="text-lg font-bold text-gray-900">Total</span>
-        <span className="text-2xl font-bold text-[#8B4513]">${total.toFixed(2)}</span>
+        <span className="text-2xl font-bold text-[#8B4513]">Rs. {total.toFixed(2)}</span>
       </div>
 
       {/* Free Shipping Progress */}
       {subtotal < 50 && (
         <div className="mb-6">
           <div className="mb-2 flex justify-between text-sm text-gray-600">
-            <span>Add ${(50 - subtotal).toFixed(2)} more for free shipping</span>
+            <span>Add Rs. {(50 - subtotal).toFixed(2)} more for free shipping</span>
             <span>{Math.round((subtotal / 50) * 100)}%</span>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-gray-200">
@@ -294,13 +309,7 @@ function OrderSummary({ subtotal, onCheckout }: { subtotal: number; onCheckout: 
 }
 
 // Cart Actions Component
-function CartActions({
-  onClearCart,
-  onContinueShopping,
-}: {
-  onClearCart: () => void;
-  onContinueShopping: () => void;
-}) {
+function CartActions({ onClearCart }: { onClearCart: () => void }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 border-t border-gray-200 pt-6">
       <button
@@ -321,27 +330,93 @@ function CartActions({
   );
 }
 
+// Helper function to fetch current stock for variants
+async function fetchVariantStock(variantId: string, productId: number): Promise<number | null> {
+  try {
+    const response = await fetch(`/api/products/${productId}/variants/${variantId}/stock`);
+    if (response.ok) {
+      const data = await response.json();
+      return data.stock;
+    }
+    return null;
+  } catch (error) {
+    console.error(`Failed to fetch stock for ${variantId}:`, error);
+    return null;
+  }
+}
+
 // Main Cart Page Component
 export default function CartPage() {
   const router = useRouter();
-  const { cart, updateQuantity, removeFromCart, clearCart, getCartTotal, getCartCount } = useCart();
+  const { cart, updateQuantity, removeFromCart, clearCart } = useCart();
   const [isHydrated, setIsHydrated] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [stockMap, setStockMap] = useState<Map<string, number>>(new Map());
+  const [isLoadingStock, setIsLoadingStock] = useState(true);
 
-  // Ensure component is hydrated before showing cart (prevous hydration issues)
+  // Calculate cart totals safely
+  const calculateTotals = () => {
+    let subtotal = 0;
+    let count = 0;
+    cart.forEach(item => {
+      const price = getSafePrice(item.price);
+      subtotal += price * item.quantity;
+      count += item.quantity;
+    });
+    return { subtotal, count };
+  };
+
+  const { subtotal, count: itemCount } = calculateTotals();
+
+  // Fetch current stock for all items in cart
+  useEffect(() => {
+    if (cart.length > 0) {
+      setIsLoadingStock(true);
+
+      Promise.all(
+        cart.map(async item => {
+          const stock = await fetchVariantStock(item.id, item.productId);
+          return { variantId: item.id, stock };
+        })
+      ).then(results => {
+        const newStockMap = new Map<string, number>();
+        results.forEach(({ variantId, stock }) => {
+          if (stock !== null) {
+            newStockMap.set(variantId, stock);
+          }
+        });
+        setStockMap(newStockMap);
+        setIsLoadingStock(false);
+
+        // Adjust quantities that exceed stock
+        cart.forEach(item => {
+          const currentStock = newStockMap.get(item.id);
+          if (currentStock !== undefined && item.quantity > currentStock) {
+            updateQuantity(item.id, currentStock);
+          }
+        });
+      });
+    } else {
+      setIsLoadingStock(false);
+    }
+  }, [cart.length]);
+
+  // Ensure component is hydrated
   useEffect(() => {
     setIsHydrated(true);
   }, []);
 
-  const subtotal = getCartTotal();
-  const itemCount = getCartCount();
-
-  const handleUpdateQuantity = (productId: number, quantity: number) => {
-    updateQuantity(productId, quantity);
+  const handleUpdateQuantity = (itemId: string, quantity: number) => {
+    const maxStock = stockMap.get(itemId);
+    if (maxStock !== undefined && quantity > maxStock) {
+      updateQuantity(itemId, maxStock);
+    } else {
+      updateQuantity(itemId, quantity);
+    }
   };
 
-  const handleRemoveItem = (productId: number) => {
-    removeFromCart(productId);
+  const handleRemoveItem = (itemId: string) => {
+    removeFromCart(itemId);
   };
 
   const handleClearCart = () => {
@@ -356,12 +431,14 @@ export default function CartPage() {
   };
 
   // Loading state
-  if (!isHydrated) {
+  if (!isHydrated || isLoadingStock) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-gray-50 to-white">
         <div className="text-center">
           <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-[#8B4513] border-t-transparent" />
-          <p className="text-gray-600">Loading cart...</p>
+          <p className="text-gray-600">
+            {isLoadingStock ? 'Checking stock availability...' : 'Loading cart...'}
+          </p>
         </div>
       </div>
     );
@@ -432,15 +509,13 @@ export default function CartPage() {
                       item={item}
                       onUpdateQuantity={handleUpdateQuantity}
                       onRemove={handleRemoveItem}
+                      stockMap={stockMap}
                     />
                   ))}
                 </div>
 
                 {/* Cart Actions */}
-                <CartActions
-                  onClearCart={() => setShowClearConfirm(true)}
-                  onContinueShopping={() => router.push('/shop')}
-                />
+                <CartActions onClearCart={() => setShowClearConfirm(true)} />
               </div>
 
               {/* Continue Shopping Link - Mobile */}

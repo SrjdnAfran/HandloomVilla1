@@ -229,7 +229,16 @@ export default function ProductDetailPage() {
       .then(data => {
         if (data.error) throw new Error(data.error);
 
-        setProduct(data);
+        // Ensure basePrice is a number
+        const productData = {
+          ...data,
+          basePrice:
+            typeof data.base_price === 'number'
+              ? data.base_price
+              : parseFloat(data.base_price) || 0,
+        };
+
+        setProduct(productData);
         // Set default variant
         const defaultVariant =
           data.variants?.find((v: ProductVariant) => v.isDefault) || data.variants?.[0];
@@ -259,7 +268,7 @@ export default function ProductDetailPage() {
     if (!product || !selectedVariant) return;
 
     addToCart({
-      id: selectedVariant.id, // This is string, which matches CartItem id type
+      id: selectedVariant.id,
       productId: product.id,
       name: `${product.name} - ${selectedVariant.color}`,
       price: product.basePrice,
@@ -296,11 +305,11 @@ export default function ProductDetailPage() {
     );
   }
 
-  // Safe price formatting
+  // Safe price formatting - convert to Rs (LKR)
   const safePrice =
-    product.basePrice !== undefined && !isNaN(product.basePrice)
-      ? product.basePrice.toFixed(2)
-      : '0.00';
+    product.basePrice !== undefined && !isNaN(product.basePrice) && product.basePrice > 0
+      ? product.basePrice.toLocaleString('en-IN')
+      : '0';
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -330,8 +339,8 @@ export default function ProductDetailPage() {
 
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* Main Product Section */}
-        <div className="mb-8 rounded-2xl bg-white p-6 shadow-lg md:p-8">
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        <div className="mb-6 rounded-2xl bg-white p-4 shadow-lg md:p-5">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[0.9fr_1.1fr]">
             <ImageGallery
               images={product.variants?.map(v => v.image) || []}
               productName={product.name}
@@ -366,9 +375,11 @@ export default function ProductDetailPage() {
 
               <div className="mb-6">
                 <div className="flex items-center gap-3">
-                  <span className="text-3xl font-bold text-[#8B4513]">${safePrice}</span>
+                  <span className="text-3xl font-bold text-[#8B4513]">Rs. {safePrice}</span>
                 </div>
-                <p className="mt-1 text-xs text-gray-500">Tax included • Free shipping over $50</p>
+                <p className="mt-1 text-xs text-gray-500">
+                  Tax included • Free shipping over Rs. 10,000
+                </p>
               </div>
 
               <p className="mb-6 leading-relaxed text-gray-600">
@@ -397,7 +408,8 @@ export default function ProductDetailPage() {
                   }`}
                 >
                   <ShoppingCart className="h-5 w-5" />
-                  Add to Cart — ${(parseFloat(safePrice) * quantity).toFixed(2)}
+                  Add to Cart — Rs.{' '}
+                  {(parseFloat(safePrice.replace(/,/g, '')) * quantity).toLocaleString('en-IN')}
                 </button>
 
                 <button
@@ -427,7 +439,7 @@ export default function ProductDetailPage() {
               <div className="space-y-3 border-t border-gray-100 pt-6 text-sm">
                 <div className="flex items-center gap-3">
                   <Truck className="h-5 w-5 text-[#8B4513]" />
-                  <span>Free shipping on orders over $50</span>
+                  <span>Free shipping on orders over Rs. 10,000</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Shield className="h-5 w-5 text-[#8B4513]" />
@@ -528,7 +540,7 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* Related Products */}
+        {/* Related Products - COMPACT CARD DESIGN */}
         {relatedProducts.length > 0 && (
           <div>
             <h2 className="mb-6 font-serif text-2xl font-bold text-gray-900">You May Also Like</h2>
@@ -536,12 +548,14 @@ export default function ProductDetailPage() {
               {relatedProducts.map(related => {
                 const defaultVariant = related.variants?.[0];
                 const relatedPrice =
-                  related.basePrice !== undefined && !isNaN(related.basePrice)
-                    ? related.basePrice.toFixed(2)
-                    : '0.00';
+                  related.basePrice !== undefined &&
+                  !isNaN(related.basePrice) &&
+                  related.basePrice > 0
+                    ? related.basePrice.toLocaleString('en-IN')
+                    : '0';
                 return (
                   <Link key={related.id} href={`/products/${related.id}`}>
-                    <div className="group cursor-pointer overflow-hidden rounded-xl bg-white shadow-md transition-all duration-300 hover:shadow-xl">
+                    <div className="group cursor-pointer overflow-hidden rounded-xl bg-white shadow-md transition-all duration-300 hover:shadow-lg">
                       <div className="relative h-40 bg-gradient-to-br from-amber-100 to-amber-50">
                         <Image
                           src={defaultVariant?.image || '/images/placeholder.jpg'}
@@ -551,11 +565,13 @@ export default function ProductDetailPage() {
                         />
                       </div>
                       <div className="p-3">
-                        <h3 className="mb-1 line-clamp-2 text-sm font-bold text-gray-900 transition-colors group-hover:text-[#8B4513]">
+                        <h3 className="mb-1 line-clamp-2 text-sm font-semibold text-gray-900 transition-colors group-hover:text-[#8B4513]">
                           {related.name}
                         </h3>
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg font-bold text-[#8B4513]">${relatedPrice}</span>
+                        <div className="mt-1 flex items-center gap-1">
+                          <span className="text-md font-bold text-[#8B4513]">
+                            Rs. {relatedPrice}
+                          </span>
                         </div>
                       </div>
                     </div>
