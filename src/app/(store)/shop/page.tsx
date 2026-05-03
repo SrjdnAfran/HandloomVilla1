@@ -20,13 +20,17 @@ import { useCart } from '@/context/CartContext';
 
 // Product Type Definition
 type Product = {
-  id: number;
+  id: string; // variant ID (string)
+  productId: number; // product ID (number)
   name: string;
   price: number;
   originalPrice: number | null;
   rating: number;
   reviewCount: number;
   image: string;
+  color: string;
+  sku: string;
+  slug: string;
   category: string;
   inStock: boolean;
   isNew: boolean;
@@ -34,7 +38,7 @@ type Product = {
   description: string;
 };
 
-// Categories for filtering (kept as-is for UI)
+// Categories for filtering
 const categories = ['All Products', 'Silk Sarees', 'Cotton Kurtis', 'Dupattas', "Men's Collection"];
 
 // Sort options
@@ -54,7 +58,65 @@ const priceRanges = [
   { label: 'Over $100', min: 100, max: Infinity },
 ];
 
-// Star Rating Component (unchanged)
+// Fallback products for when database is empty
+const fallbackProducts: Product[] = [
+  {
+    id: '1',
+    productId: 1,
+    name: 'Banarasi Silk Saree',
+    price: 89.99,
+    originalPrice: 149.99,
+    rating: 4.8,
+    reviewCount: 156,
+    image: '/images/products/banarasi-silk.jpg',
+    color: 'Red',
+    sku: 'BAN-RED-001',
+    slug: 'banarasi-silk-saree-red-ban-red-001',
+    category: 'Silk Sarees',
+    inStock: true,
+    isNew: false,
+    isBestseller: true,
+    description: 'Handcrafted pure silk saree with intricate zari work',
+  },
+  {
+    id: '2',
+    productId: 2,
+    name: 'Handloom Cotton Kurta',
+    price: 45.99,
+    originalPrice: null,
+    rating: 4.9,
+    reviewCount: 89,
+    image: '/images/products/cotton-kurta.jpg',
+    color: 'Blue',
+    sku: 'KUR-BLU-001',
+    slug: 'handloom-cotton-kurta-blue-kur-blu-001',
+    category: 'Cotton Kurtis',
+    inStock: true,
+    isNew: true,
+    isBestseller: false,
+    description: 'Breathable handloom cotton kurta with elegant block print',
+  },
+  {
+    id: '3',
+    productId: 3,
+    name: 'Chanderi Dupatta',
+    price: 35.99,
+    originalPrice: 59.99,
+    rating: 4.7,
+    reviewCount: 67,
+    image: '/images/products/chanderi-dupatta.jpg',
+    color: 'Gold',
+    sku: 'CHA-GLD-001',
+    slug: 'chanderi-dupatta-gold-cha-gld-001',
+    category: 'Dupattas',
+    inStock: true,
+    isNew: false,
+    isBestseller: false,
+    description: 'Lightweight Chanderi dupatta with delicate gold border',
+  },
+];
+
+// Star Rating Component
 function StarRating({ rating }: { rating: number }) {
   return (
     <div className="flex gap-0.5">
@@ -68,26 +130,24 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-// Product Card Component (unchanged - only minor fix for useCart in list view)
-function ProductCard({ product }: { product: Product }) {
+// Product Card Component
+function ProductCard({
+  product,
+  onAddToCart,
+}: {
+  product: Product;
+  onAddToCart: (product: Product) => void;
+}) {
   const [isHovered, setIsHovered] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const { addToCart } = useCart();
 
   const discount = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0;
 
   const handleAddToCart = () => {
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      quantity: 1,
-      image: product.image,
-      inStock: product.inStock,
-    });
+    onAddToCart(product);
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 2000);
   };
@@ -137,7 +197,7 @@ function ProductCard({ product }: { product: Product }) {
       <div className="relative h-56 overflow-hidden bg-gradient-to-br from-amber-100 to-amber-50">
         <Image
           src={product.image}
-          alt={product.name}
+          alt={`${product.name} - ${product.color}`}
           fill
           className={`object-cover transition-transform duration-500 ${
             isHovered ? 'scale-110' : 'scale-100'
@@ -160,7 +220,7 @@ function ProductCard({ product }: { product: Product }) {
             <ShoppingCart className="h-5 w-5" />
           </button>
           <Link
-            href={`/products/${product.id}`}
+            href={`/product/${product.slug}`}
             className="transform rounded-full bg-white p-2.5 transition-all hover:scale-110 hover:bg-[#8B4513] hover:text-white"
             aria-label="Quick view"
           >
@@ -178,16 +238,16 @@ function ProductCard({ product }: { product: Product }) {
           <span className="text-xs text-gray-500">({product.reviewCount})</span>
         </div>
 
-        <Link href={`/products/${product.id}`}>
+        <Link href={`/product/${product.slug}`}>
           <h3 className="mb-2 line-clamp-2 text-sm font-bold text-gray-900 transition-colors hover:text-[#8B4513]">
-            {product.name}
+            {product.name} - {product.color}
           </h3>
         </Link>
 
         <div className="mb-3 flex items-center gap-2">
-          <span className="text-lg font-bold text-[#8B4513]">Rs. {product.price}</span>
+          <span className="text-lg font-bold text-[#8B4513]">${product.price}</span>
           {product.originalPrice && (
-            <span className="text-xs text-gray-400 line-through">Rs. {product.originalPrice}</span>
+            <span className="text-xs text-gray-400 line-through">${product.originalPrice}</span>
           )}
         </div>
 
@@ -215,7 +275,7 @@ function ProductCard({ product }: { product: Product }) {
   );
 }
 
-// FilterSidebar Component (unchanged)
+// FilterSidebar Component
 function FilterSidebar({
   selectedCategory,
   onCategoryChange,
@@ -237,7 +297,6 @@ function FilterSidebar({
 
   const FilterContent = () => (
     <div className="space-y-6">
-      {/* Categories */}
       <div>
         <h3 className="mb-3 font-semibold text-gray-900">Categories</h3>
         <div className="space-y-2">
@@ -256,7 +315,6 @@ function FilterSidebar({
         </div>
       </div>
 
-      {/* Price Range */}
       <div>
         <h3 className="mb-3 font-semibold text-gray-900">Price Range</h3>
         <div className="space-y-2">
@@ -275,7 +333,6 @@ function FilterSidebar({
         </div>
       </div>
 
-      {/* Availability */}
       <div>
         <h3 className="mb-3 font-semibold text-gray-900">Availability</h3>
         <label className="flex cursor-pointer items-center gap-2">
@@ -289,7 +346,6 @@ function FilterSidebar({
         </label>
       </div>
 
-      {/* Reset Button */}
       <button
         onClick={onReset}
         className="w-full py-2 text-sm font-semibold text-[#8B4513] transition-colors hover:text-[#5C2E0B]"
@@ -301,7 +357,6 @@ function FilterSidebar({
 
   return (
     <>
-      {/* Mobile Filter Button */}
       <div className="mb-4 lg:hidden">
         <button
           onClick={() => setIsMobileOpen(true)}
@@ -312,7 +367,6 @@ function FilterSidebar({
         </button>
       </div>
 
-      {/* Mobile Filter Drawer */}
       {isMobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/50" onClick={() => setIsMobileOpen(false)} />
@@ -331,7 +385,6 @@ function FilterSidebar({
         </div>
       )}
 
-      {/* Desktop Sidebar */}
       <div className="hidden lg:col-span-1 lg:block">
         <div className="sticky top-24 rounded-2xl border border-gray-100 bg-white p-6 shadow-lg">
           <h2 className="mb-6 text-xl font-bold">Filters</h2>
@@ -347,6 +400,7 @@ export default function ShopPage() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { addToCart } = useCart();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Products');
@@ -357,38 +411,77 @@ export default function ShopPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [visibleCount, setVisibleCount] = useState(8);
 
+  const handleAddToCart = (product: Product) => {
+    addToCart({
+      id: product.id,
+      productId: product.productId,
+      name: product.name,
+      price: product.price,
+      quantity: 1,
+      image: product.image,
+      sku: product.sku,
+      color: product.color,
+      inStock: product.inStock,
+    });
+  };
+
   // Fetch products from API
   useEffect(() => {
     fetch('/api/products')
       .then(res => {
-        if (!res.ok) throw new Error('Failed to fetch products');
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
         return res.json();
       })
       .then(data => {
-        // Map DB shape (with variants) to frontend Product shape
-        const mapped: Product[] = data.flatMap((product: any) =>
-          (product.variants || []).map((variant: any) => ({
-            id: parseInt(variant.id) || product.id,
-            name: product.name,
-            price: product.base_price, // or variant.price if you have per-variant pricing
-            originalPrice: null,
-            rating: 4.8,
-            reviewCount: 0,
-            image: variant.image || '/images/placeholder.jpg',
-            category: product.category,
-            inStock: variant.stock > 0,
-            isNew: false,
-            isBestseller: product.is_featured || false,
-            description: product.description || '',
-          }))
-        );
+        if (data.error) {
+          throw new Error(data.error);
+        }
 
-        setAllProducts(mapped);
+        // If no products in database, use fallback
+        if (!data || data.length === 0) {
+          setAllProducts(fallbackProducts);
+          setIsLoading(false);
+          return;
+        }
+
+        // Flatten variants into individual product cards
+        const flattened: Product[] = [];
+
+        data.forEach((product: any) => {
+          if (product.variants && product.variants.length > 0) {
+            product.variants.forEach((variant: any) => {
+              flattened.push({
+                id: variant.id,
+                productId: product.id,
+                name: product.name,
+                price: product.base_price,
+                originalPrice: null,
+                rating: 4.8,
+                reviewCount: 0,
+                image: variant.image,
+                color: variant.color,
+                sku: variant.sku,
+                slug: variant.slug,
+                category: product.category,
+                inStock: variant.stock > 0,
+                isNew: false,
+                isBestseller: product.is_featured || false,
+                description: product.description || '',
+              });
+            });
+          }
+        });
+
+        setAllProducts(flattened.length > 0 ? flattened : fallbackProducts);
         setIsLoading(false);
       })
       .catch(err => {
-        console.error(err);
-        setError('Failed to load products. Please try again later.');
+        console.error('Fetch error:', err);
+        // Use fallback products when API fails
+        setAllProducts(fallbackProducts);
+        setError(null); // Clear error to show products
         setIsLoading(false);
       });
   }, []);
@@ -397,7 +490,8 @@ export default function ShopPage() {
   const filteredProducts = allProducts.filter(product => {
     const matchesSearch =
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase());
+      product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.color.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesCategory =
       selectedCategory === 'All Products' || product.category === selectedCategory;
@@ -428,7 +522,6 @@ export default function ShopPage() {
         sorted.sort((a, b) => (b.isNew ? 1 : -1));
         break;
       default:
-        // featured
         sorted.sort((a, b) => (b.isBestseller ? 1 : -1));
     }
 
@@ -458,19 +551,6 @@ export default function ShopPage() {
         <div className="text-center">
           <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-[#8B4513] border-t-transparent"></div>
           <p className="text-gray-600">Loading our handloom collection...</p>
-        </div>
-      </main>
-    );
-  }
-
-  if (error) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-gray-50 to-white pt-8 pb-16">
-        <div className="text-center">
-          <p className="mb-4 text-red-600">{error}</p>
-          <button onClick={() => window.location.reload()} className="text-[#8B4513] underline">
-            Try Again
-          </button>
         </div>
       </main>
     );
@@ -507,7 +587,6 @@ export default function ShopPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
-          {/* Filter Sidebar */}
           <FilterSidebar
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}
@@ -518,7 +597,6 @@ export default function ShopPage() {
             onReset={handleReset}
           />
 
-          {/* Products Section */}
           <div className="lg:col-span-3">
             {/* Toolbar */}
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
@@ -529,7 +607,6 @@ export default function ShopPage() {
               </div>
 
               <div className="flex items-center gap-3">
-                {/* Sort Dropdown */}
                 <div className="relative">
                   <button
                     onClick={() => setIsSortOpen(!isSortOpen)}
@@ -566,14 +643,12 @@ export default function ShopPage() {
                   )}
                 </div>
 
-                {/* View Mode Toggle */}
                 <div className="flex gap-1 rounded-lg bg-gray-100 p-1">
                   <button
                     onClick={() => setViewMode('grid')}
                     className={`rounded-lg p-2 transition-colors ${
                       viewMode === 'grid' ? 'bg-white text-[#8B4513] shadow' : 'text-gray-500'
                     }`}
-                    aria-label="Grid view"
                   >
                     <Grid3x3 className="h-4 w-4" />
                   </button>
@@ -582,7 +657,6 @@ export default function ShopPage() {
                     className={`rounded-lg p-2 transition-colors ${
                       viewMode === 'list' ? 'bg-white text-[#8B4513] shadow' : 'text-gray-500'
                     }`}
-                    aria-label="List view"
                   >
                     <List className="h-4 w-4" />
                   </button>
@@ -590,7 +664,6 @@ export default function ShopPage() {
               </div>
             </div>
 
-            {/* Products Grid / List */}
             {sortedProducts.length === 0 ? (
               <div className="rounded-2xl bg-white py-16 text-center shadow-sm">
                 <div className="mb-4 text-6xl">🔍</div>
@@ -606,7 +679,7 @@ export default function ShopPage() {
               <>
                 <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {visibleProducts.map(product => (
-                    <ProductCard key={product.id} product={product} />
+                    <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
                   ))}
                 </div>
 
@@ -622,7 +695,6 @@ export default function ShopPage() {
                 )}
               </>
             ) : (
-              /* List View */
               <div className="space-y-4">
                 {visibleProducts.map(product => (
                   <div
@@ -632,7 +704,7 @@ export default function ShopPage() {
                     <div className="relative h-32 w-full flex-shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-amber-100 to-amber-50 sm:w-32">
                       <Image
                         src={product.image}
-                        alt={product.name}
+                        alt={`${product.name} - ${product.color}`}
                         fill
                         className="object-cover"
                         loading="lazy"
@@ -642,7 +714,9 @@ export default function ShopPage() {
                       <div className="mb-1 text-xs font-semibold text-[#8B4513]">
                         {product.category}
                       </div>
-                      <h3 className="mb-2 text-lg font-bold text-gray-900">{product.name}</h3>
+                      <h3 className="mb-2 text-lg font-bold text-gray-900">
+                        {product.name} - {product.color}
+                      </h3>
                       <p className="mb-2 line-clamp-2 text-sm text-gray-600">
                         {product.description}
                       </p>
@@ -660,17 +734,7 @@ export default function ShopPage() {
                       </div>
                     </div>
                     <button
-                      onClick={() => {
-                        const { addToCart } = useCart(); // Note: better to hoist useCart() to top level
-                        addToCart({
-                          id: product.id,
-                          name: product.name,
-                          price: product.price,
-                          quantity: 1,
-                          image: product.image,
-                          inStock: product.inStock,
-                        });
-                      }}
+                      onClick={() => handleAddToCart(product)}
                       disabled={!product.inStock}
                       className={`self-center rounded-lg px-6 py-2 font-semibold transition-all ${
                         product.inStock
