@@ -6,9 +6,11 @@ import { Star, ShoppingCart, Eye, Heart } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import Image from 'next/image';
 
+// Generate variant IDs for static products
 const products = [
   {
     id: 1,
+    variantId: 'prod-1-default', // Add variant ID (string)
     name: 'Premium Silk Saree',
     price: 8500,
     originalPrice: 9500,
@@ -18,9 +20,12 @@ const products = [
     category: 'Silk Sarees',
     inStock: true,
     isNew: false,
+    sku: 'PSS-001',
+    color: 'Red',
   },
   {
     id: 2,
+    variantId: 'prod-2-default',
     name: 'Elegant Cotton Saree',
     price: 6000,
     originalPrice: 6500,
@@ -30,9 +35,12 @@ const products = [
     category: 'Cotton Sarees',
     inStock: true,
     isNew: true,
+    sku: 'ECS-002',
+    color: 'Blue',
   },
   {
     id: 3,
+    variantId: 'prod-3-default',
     name: 'Designer Embroidery Saree',
     price: 7600,
     originalPrice: 8500,
@@ -42,10 +50,12 @@ const products = [
     category: 'Embroidery Sarees',
     inStock: true,
     isNew: true,
+    sku: 'DES-003',
+    color: 'Gold',
   },
-
   {
     id: 8,
+    variantId: 'prod-8-default',
     name: 'Embroidered Premium Sarong',
     price: 3000,
     originalPrice: 3500,
@@ -55,6 +65,8 @@ const products = [
     category: 'Embroidery Sarongs',
     inStock: true,
     isNew: false,
+    sku: 'EPS-008',
+    color: 'Maroon',
   },
 ];
 
@@ -82,12 +94,16 @@ function ProductCard({ product }: { product: (typeof products)[0] }) {
     : 0;
 
   const handleAddToCart = () => {
+    // Use variantId (string) instead of id (number)
     addToCart({
-      id: product.id,
+      id: product.variantId,
+      productId: product.id,
       name: product.name,
       price: product.price,
       quantity: 1,
       image: product.image,
+      sku: product.sku,
+      color: product.color,
       inStock: product.inStock,
     });
     setShowSuccess(true);
@@ -126,7 +142,7 @@ function ProductCard({ product }: { product: (typeof products)[0] }) {
       </button>
 
       {/* Image Container */}
-      <div className="relative h-56 overflow-hidden bg-linear-to-br from-amber-100 to-amber-50">
+      <div className="relative h-56 overflow-hidden bg-gradient-to-br from-amber-100 to-amber-50">
         <Image
           src={product.image}
           alt={product.name}
@@ -175,9 +191,9 @@ function ProductCard({ product }: { product: (typeof products)[0] }) {
         </Link>
 
         <div className="mb-3 flex items-center gap-2">
-          <span className="text-lg font-bold text-[#8B4513] sm:text-xl">LKR{product.price}</span>
+          <span className="text-lg font-bold text-[#8B4513] sm:text-xl">LKR {product.price}</span>
           {product.originalPrice && (
-            <span className="text-xs text-gray-400 line-through">LKR{product.originalPrice}</span>
+            <span className="text-xs text-gray-400 line-through">LKR {product.originalPrice}</span>
           )}
         </div>
 
